@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.contrib.auth.models import User
+from django.utils.timezone import now
 
 
 from database.models import Application, UserProfile
@@ -51,6 +52,7 @@ def confirm_application(request):
             # Обновляем заявку
             application.status = 'completed'
             application.net_amount_in_usdt = net_amount_in_usdt
+            application.completed_time = now()
             application.save()
 
             return JsonResponse({'status': 'success'})
