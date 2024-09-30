@@ -1,0 +1,44 @@
+from database.models import Application
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_protect
+
+from main_site.utils.telegram_api import send_problem_data
+
+
+@csrf_protect
+def report_problem(request):
+    if request.method == 'POST':
+        try:
+            # Получаем ID заявки и описание проблемы из данных формы
+            application_id = request.POST.get('application_id')
+            problem = request.POST.get('problem')
+
+            # Проверяем, указана ли проблема
+            if not problem:
+                return JsonResponse({"error": "Описание проблемы обязательно"}, status=400)
+
+            # Находим заявку
+            application = get_object_or_404(Application, id=application_id, user_id=request.user.id)
+
+            # Меняем статус заявки на 'manual' и записываем проблему
+            application.status = 'manual'
+            application.problem = problem
+            application.save()
+
+            # Отправляем данные через send_application_data
+            result, error = send_problem_data(application_id)
+            if error:
+                return JsonResponse({"error": error}, status=400)
+
+            # Возвращаем успешный ответ
+            return JsonResponse({
+                "status": "success",
+                "message": "Заявка обновлена и проблема зафиксирована"
+            })
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Неподдерживаемый метод"}, status=405)

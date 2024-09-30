@@ -1,0 +1,44 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<h1>Статистика по заявкам</h1>
+
+<h2>Общая статистика</h2>
+<ul>
+    <li>Общее количество заявок: {{ stats.total_count }}</li>
+    <li>Заявки за сегодня: {{ stats.count_day }}</li>
+    <li>Заявки за последнюю неделю: {{ stats.count_week }}</li>
+    <li>Заявки за последний месяц: {{ stats.count_month }}</li>
+    <li>Заявки за последний год: {{ stats.count_year }}</li>
+</ul>
+
+<h2>Сумма заявок</h2>
+<ul>
+    <li>Общая сумма: {{ stats.total_sum }}</li>
+    <li>Сумма заявок за сегодня: {{ stats.sum_day }}</li>
+    <li>Сумма заявок за последнюю неделю: {{ stats.sum_week }}</li>
+    <li>Сумма заявок за последний месяц: {{ stats.sum_month }}</li>
+    <li>Сумма заявок за последний год: {{ stats.sum_year }}</li>
+</ul>
+
+<h2>Статистика по мерчантам</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID Мерчанта</th>
+            <th>Количество заявок</th>
+            <th>Общая сумма заявок</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for merchant in merchants %}
+        <tr>
+            <td>{{ merchant.merchant_id }}</td>
+            <td>{{ merchant.total_count }}</td>
+            <td>{{ merchant.total_sum }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

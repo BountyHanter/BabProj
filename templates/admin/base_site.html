@@ -1,0 +1,10 @@
+{% extends "admin/base_site.html" %}
+{% block usertools %}
+        <!-- Добавляем нашу кастомную ссылку в меню -->
+    <li>
+        <a href="{% url 'admin:application_statistics' %}">
+            Статистика заявок
+        </a>
+    </li>
+    {{ block.super }}
+{% endblock %}
