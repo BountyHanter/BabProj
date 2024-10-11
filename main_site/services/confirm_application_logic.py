@@ -1,16 +1,15 @@
 from decimal import Decimal
+import json
+import os
 
 from django.contrib.auth.models import User
 from django.utils.timezone import now
-
-
-from database.models import Application, UserProfile
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-
-import json
-import os
 from django.conf import settings  # Для работы с путями к статическим файлам
+
+from database.models.application import Application
+from database.models.user_profile import UserProfile
 
 
 def confirm_application(request):
@@ -53,6 +52,9 @@ def confirm_application(request):
             application.status = 'completed'
             application.net_amount_in_usdt = net_amount_in_usdt
             application.completed_time = now()
+            application.closing_rate = average_price
+            application.rate_after_fee = adjusted_usdt
+            application.percentage = percentage
             application.save()
 
             return JsonResponse({'status': 'success'})

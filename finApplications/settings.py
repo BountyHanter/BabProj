@@ -27,16 +27,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = False
 
-if DEBUG:
-    ALLOWED_HOSTS = ["*"]
-else:
-    ALLOWED_HOSTS = ["babdata.cloud"]
+ALLOWED_HOSTS = ["dev.babdata.cloud", "127.0.0.1", "localhost"]
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -50,6 +46,8 @@ INSTALLED_APPS = [
 
     "database.apps.DatabaseConfig",
     "main_site.apps.MainSiteConfig",
+    "finApplications.apps.FinApplicationsConfig",
+    "report_service.apps.ReportServiceConfig"  # Добавьте эту строку
 ]
 
 REST_FRAMEWORK = {
@@ -100,9 +98,9 @@ WSGI_APPLICATION = 'finApplications.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME_DEV') if DEBUG else os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER_DEV') if DEBUG else os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD_DEV') if DEBUG else os.getenv('DB_PASSWORD'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': os.getenv('DB_HOST', 'localhost'),  # Это обычно одинаково для всех окружений
         'PORT': os.getenv('DB_PORT', '5432'),       # Одинаковый порт для всех окружений
     }
@@ -143,23 +141,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-if DEBUG:
-    STATIC_URL = '/static/'
-    STATICFILES_DIRS = [
-        os.path.join(BASE_DIR, 'database/static'),
-    ]
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
+STATIC_ROOT = '/var/www/babdata.cloud/static/'
 
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Локальная директория для медиа-файлов в разработке
-
-else:
-    STATIC_URL = '/static/'
-    STATIC_ROOT = '/var/www/babdata.cloud/static/'
-    STATICFILES_DIRS = []  # В продакшене не используется
-
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = '/var/www/babdata.cloud/media/'  # Директория для медиа-файлов в продакшене
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/var/www/babdata.cloud/media/'  # Директория для медиа-файлов в продакшене
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -180,36 +166,23 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB, например
 
 ASGI_APPLICATION = 'finApplications.asgi.application'
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_TRUSTED_ORIGINS = ['http://dev.babdata.cloud', 'http://127.0.0.1']
 
-if DEBUG:
-    # Используем InMemoryChannelLayer для разработки
-    CHANNEL_LAYERS = {
-        'default': {
-            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Используем Redis для продакшена
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
         },
-    }
-else:
-    # Используем Redis для продакшена
-    CHANNEL_LAYERS = {
-        'default': {
-            'BACKEND': 'channels_redis.core.RedisChannelLayer',
-            'CONFIG': {
-                "hosts": [('127.0.0.1', 6379)],
-            },
-        },
-    }
+    },
+}
 
-
-if DEBUG:
-    SECURE_SSL_REDIRECT = False  # В разработке перенаправление не нужно
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-else:
-    SECURE_SSL_REDIRECT = True  # В продакшене принудительное HTTPS
-    SESSION_COOKIE_SECURE = True  # Использовать только через HTTPS
-    CSRF_COOKIE_SECURE = True     # Использовать только через HTTPS
-
+# SECURE_SSL_REDIRECT = True  # В продакшене принудительное HTTPS
+# SESSION_COOKIE_SECURE = True  # Использовать только через HTTPS
+# CSRF_COOKIE_SECURE = True     # Использовать только через HTTPS
 
 LOGGING = {
     'version': 1,

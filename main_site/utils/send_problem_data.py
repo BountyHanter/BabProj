@@ -1,9 +1,8 @@
-from database.models import Application
-
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 
+from database.models.application import Application
 from main_site.utils.telegram_api import send_problem_data
 
 

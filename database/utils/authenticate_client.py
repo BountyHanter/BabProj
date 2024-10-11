@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.contrib.auth.hashers import check_password
 
-from database.models import APIKey
+from database.models.api_keys import APIKey
 
 
 def authenticate_client(request):

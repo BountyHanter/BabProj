@@ -5,8 +5,7 @@ import requests
 import json
 import os
 
-from finApplications import settings
-
+from finApplications.settings import BASE_DIR
 
 def save_to_json(filename, data):
     # Если файла нет, создаем его и записываем данные
@@ -69,7 +68,7 @@ def get_average_price():
 
 
 def take_bybit_price():
-    file_path = os.path.join(settings.BASE_DIR, 'finApplications', 'average_price.json')
+    file_path = os.path.join(BASE_DIR, 'finApplications', 'average_price.json')
 
     with open(file_path, 'r') as file:
         data = json.load(file)

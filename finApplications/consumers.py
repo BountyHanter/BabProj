@@ -9,10 +9,10 @@ class DatabaseUpdateConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
         # # Выводим информацию о сессии и пользователе
-        # if self.scope['user'].is_authenticated:
-        #     print(f"Authenticated user: {self.scope['user'].id}")
-        # else:
-        #     print("User is not authenticated")
+        if self.scope['user'].is_authenticated:
+            print(f"Authenticated user: {self.scope['user'].id}")
+        else:
+            print("User is not authenticated")
 
         user = self.scope['user']
 
@@ -20,7 +20,7 @@ class DatabaseUpdateConsumer(AsyncWebsocketConsumer):
             user_id = user.id
             self.group_name = f"user_{user_id}"
 
-            # print(f"Пользователь {user_id} подключен. Группа: {self.group_name}")
+            print(f"Пользователь {user_id} подключен. Группа: {self.group_name}")
 
             # Добавляем пользователя в его личную группу
             await self.channel_layer.group_add(
@@ -31,7 +31,7 @@ class DatabaseUpdateConsumer(AsyncWebsocketConsumer):
             # Подтверждаем соединение
             await self.accept()
         else:
-            # print("Неаутентифицированный пользователь пытается подключиться.")
+            print("Неаутентифицированный пользователь пытается подключиться.")
             await self.close()
 
     async def disconnect(self, close_code):
@@ -41,9 +41,9 @@ class DatabaseUpdateConsumer(AsyncWebsocketConsumer):
                 self.group_name,
                 self.channel_name
             )
-        #     print(f"Пользователь {self.scope['user'].id} отключился от группы {self.group_name}")
-        # else:
-        #     print("Попытка отключения без group_name")
+            print(f"Пользователь {self.scope['user'].id} отключился от группы {self.group_name}")
+        else:
+            print("Попытка отключения без group_name")
 
     # Метод для отправки сообщений пользователю
     async def send_update(self, event):
@@ -51,11 +51,11 @@ class DatabaseUpdateConsumer(AsyncWebsocketConsumer):
             action = event.get('action', 'update')  # Получаем действие из event, по умолчанию 'update'
             application_id = event.get('application_id')
 
-            # print(
-            #     f"Отправляем сообщение пользователю {self.scope['user'].id} в группе {self.group_name} с действием {action}")
+            print(
+                f"Отправляем сообщение пользователю {self.scope['user'].id} в группе {self.group_name} с действием {action}")
 
             await self.send(text_data=json.dumps({
                 'action': action,  # Используем переданное действие
                 'application_id': application_id
             }))
-            # print(f"Отправлено сообщение пользователю: action={action}, application_id={application_id}")
+            print(f"Отправлено сообщение пользователю: action={action}, application_id={application_id}")

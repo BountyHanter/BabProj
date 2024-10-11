@@ -2,14 +2,14 @@ import os
 
 from dotenv import load_dotenv
 
-from database.models import Application
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 
+from database.models.application import Application
 from main_site.utils.generate_fiilename_and_valid_file import generate_unique_filename, is_valid_file_type
-from main_site.utils.get_banks import get_banks
+from main_site.utils.get_banks import get_bank_name_by_index
 from main_site.utils.telegram_api import send_application_data
 
 load_dotenv()
@@ -30,8 +30,7 @@ def upload_receipt(request):
 
             # Получаем ID банка и проверяем его существование
             bank_id = request.POST.get('bank_id')
-            banks = get_banks()
-            bank_name = next((bank['name'] for bank in banks if str(bank['id']) == bank_id), None)
+            bank_name = get_bank_name_by_index(bank_id)
             if not bank_name:
                 return JsonResponse({"error": "Банк с данным ID не найден"}, status=400)
 
@@ -44,7 +43,8 @@ def upload_receipt(request):
 
             # Проверяем тип файла (должен быть PDF или изображение)
             if not is_valid_file_type(receipt_file):
-                return JsonResponse({"error": "Недопустимый формат файла. Разрешены только PDF и изображения (JPEG, PNG)."}, status=400)
+                return JsonResponse({"error": "Недопустимый формат файла. Разрешены только PDF и изображения (JPEG, "
+                                              "PNG)."}, status=400)
 
             # Сохраняем файл с уникальным именем
             unique_filename = generate_unique_filename(receipt_file.name)
@@ -55,21 +55,19 @@ def upload_receipt(request):
             # Обновляем данные заявки
             application.has_receipt = True
             application.receipt_link = file_url
-            application.bank_name = bank_name
-            application.status = 'processing'
-            application.save()
+            application.from_bank = bank_name
 
             # Отправляем данные через send_application_data
             result, error = send_application_data(application_id)
+
             if error:
                 return JsonResponse({"error": error}, status=400)
 
-
+            application.status = 'processing'
+            application.save()
             # Возвращаем успешный ответ с ссылкой на файл
             return JsonResponse({
                 "status": "success",
-                "receipt_link": f"{SITE_URL}{file_url}",
-                "bank_name": bank_name
             })
 
         except Exception as e:

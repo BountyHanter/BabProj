@@ -1,0 +1,451 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Активная Заявка</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.png' %}">
+    <!-- Подключаем Bootstrap 4 -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Подключаем иконки Font Awesome для иконок сортировки -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!-- Подключаем Select2 стили -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .table-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .sort-icon {
+            margin-left: 5px;
+            font-size: 0.8em;
+        }
+        .sortable-column {
+            transition: background-color 0.3s ease;
+        }
+        .sortable-column a {
+            display: inline-block;
+            text-decoration: underline;
+            color: inherit;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .sortable-column a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+        .active-sort {
+            background-color: #e9ecef;
+        }
+        .active-application {
+            background-color: #d4edda;
+        }
+        .spinner-border-custom {
+            width: 3rem;
+            height: 3rem;
+            border-width: .3em;
+        }
+        .navbar-gradient {
+            background: linear-gradient(90deg, #ffffff, #000000);
+        }
+        body {
+            padding-top: 70px; /* Отступ, равный высоте навбара */
+        }
+
+        /* Стили для dropzone */
+        .dropzone {
+            background-color: #f8f9fa;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s;
+            border: 2px dashed #adb5bd; /* Пунктирная граница для лучшей визуализации */
+            border-radius: 0.25rem; /* Соответствует Bootstrap 4 */
+            padding: 40px; /* Увеличенный отступ для большей высоты */
+            width: 100%; /* Полная ширина родительского контейнера */
+            min-height: 250px; /* Минимальная высота */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .dropzone:hover {
+            background-color: #e2e6ea;
+            border-color: #6c757d;
+        }
+
+        .dropzone input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        #file-preview img,
+        #file-preview iframe {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+        .select2-container--bootstrap4 .select2-selection--single {
+            border: 1px solid #6c757d; /* Тонкая синяя рамка */
+            border-radius: 4px; /* Скругленные углы */
+        }
+
+        .select2-container--bootstrap4 .select2-selection--single:focus,
+        .select2-container--bootstrap4 .select2-selection--single:hover {
+            background-color: #e2e6ea;
+        }
+        #timer-container {
+            font-size: 1.3rem; /* Увеличение размера шрифта для текста в контейнере */
+        }
+
+        #timer {
+            font-size: 1.8rem; /* Увеличение размера шрифта для таймера */
+            padding: 0.2rem 0.8rem; /* Увеличение внутреннего отступа */
+        }
+        .nav-link {
+            border: 1px solid black; /* Обводка черным цветом */
+            border-radius: 5px; /* Скругление углов */
+            padding: 5px 10px; /* Внутренний отступ для кнопок */
+            margin: 5px; /* Внешний отступ для создания пространства между кнопками */
+            transition: all 0.3s ease; /* Плавный переход для эффектов */
+        }
+
+
+        .nav-link:hover {
+            background-color: lightgray; /* Изменение фона при наведении */
+            border-color: gray; /* Изменение цвета обводки при наведении */
+        }
+    </style>
+</head>
+<body>
+
+<!-- Навигационная панель -->
+<nav class="navbar navbar-expand-lg navbar-dark navbar-gradient fixed-top">
+    <a class="navbar-brand text-dark" href="{% url 'active_application' %}">BabData</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <!-- Левые кнопки навигации и курс -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{% url 'active_application' %}">Активная заявка</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{% url 'user_applications' %}">Прошлые заявки</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{% url 'personal_cabinet' %}">Личный кабинет</a>
+            </li>
+            <li class="nav-item d-flex align-items-center">
+                <span class="navbar-text text-dark">
+                    Курс: {{ current_course }}
+                </span>
+            </li>
+        </ul>
+
+        <!-- Правые элементы: Имя пользователя и кнопка "Выход" -->
+        {% if user.is_authenticated %}
+        <ul class="navbar-nav ml-auto align-items-center">
+            <li class="nav-item">
+                <span class="navbar-text text-white mr-3">
+                    {{ user.username }}
+                </span>
+            </li>
+            <li class="nav-item">
+                <span class="navbar-text text-white mr-3">
+                    Баланс: {{ balance }} USDT
+                </span>
+            </li>
+            <li class="nav-item">
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-link nav-link text-white" style="display: inline; padding: 0; cursor: pointer;">
+                        Выход
+                    </button>
+                </form>
+            </li>
+        </ul>
+        {% endif %}
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Активная Заявка</h1>
+
+    <!-- Блок для отображения уведомлений -->
+    <div id="notification-container" style="position: fixed; top: 60px; right: 20px; z-index: 9999;"></div>
+
+    <!-- Отображение активной заявки -->
+    <div id="active-application-section" class="mt-5">
+        {% if active_application %}
+        <div id="timer-container" class="mt-3">
+                <strong>Время до завершения заявки:</strong> <span id="timer" class="badge badge-info p-2">30:00</span>
+        </div>
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Ваша активная заявка</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive table-container">
+                    <table id="active-application-table" class="table table-hover table-bordered mb-0">
+                        <thead class="thead-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Тип</th>
+                            <th>Реквизиты</th>
+                            <th>Банк получателя</th>
+                            <th>Статус</th>
+                            <th>Сумма</th>
+                            <th>Время создания</th>
+                            <th>Время взятия</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr class="active-application">
+                            <td>{{ active_application.id }}</td>
+                            <td>{{ active_application.type }}</td>
+                            <td>{{ active_application.payment_details }}</td>
+                            <td>{{ active_application.to_bank }}</td>
+                            <td>{{ active_application.status }}</td>
+                            <td>{{ active_application.amount }}</td>
+                            <td>{{ active_application.created_at|date:"d.m.Y H:i:s" }}</td>
+                            <td class="taken-time" data-taken-time="{{ active_application.taken_time|date:"c" }}">
+                                {{ active_application.taken_time|date:"d.m.Y H:i:s" }}
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Контейнер для деталей заявки всегда отображается -->
+                <div id="receipt-container" class="mt-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="modal-title" id="receiptModalLabel">Заявка ID: <span id="application-id">{{ active_application.id }}</span></h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="receipt-form" action="{% url 'upload_receipt' %}" method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <input type="hidden" name="application_id" value="{{ active_application.id }}">
+
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label for="application-type">Тип заявки</label>
+                                        <input type="text" class="form-control" id="application-type" value="{{ active_application.type }}" readonly>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="amount">Сумма</label>
+                                        <input type="text" class="form-control" id="amount" value="{{ active_application.amount }}" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="payment-details">Реквизиты</label>
+                                    <input type="text" class="form-control" id="payment-details" value="{{ active_application.payment_details }}" readonly>
+                                </div>
+
+                                {% if active_application.status == 'active' %}
+                                <div id="upload-section">
+                                    <div class="form-group">
+                                        <label for="bank-select">Банк, с которого оплатили</label>
+                                        <select class="form-control select2" id="bank-select" name="bank_id" required>
+                                            <option value="" disabled selected>Выберите банк</option>
+                                            {% for bank in banks %}
+                                                <option value="{{ bank.id }}">{{ bank.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="receipt-file" class="font-weight-bold">Загрузить чек</label>
+                                        <div class="dropzone p-4 border border-secondary rounded text-center" id="file-dropzone">
+                                            <input type="file" id="receipt-file" name="receipt" accept="image/*,application/pdf" required>
+                                            <p class="mt-3">Перетащите файл сюда или нажмите, чтобы выбрать</p>
+                                        </div>
+                                        <div id="file-preview" class="mt-3"></div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Отправить чек на проверку</button>
+                                </div>
+                                <div id="problem-btn" class="form-group mt-3">
+                                    <button type="button" class="btn btn-danger" id="report-problem-btn">Проблема с оплатой</button>
+                                </div>
+                                {% endif %}
+
+                                {% if active_application.status != 'active' %}
+                                <div id="info-section" class="mt-3">
+                                    <div class="form-group">
+                                        <label for="bank-name">Банк, с которого оплатили</label>
+                                        <input type="text" class="form-control" id="bank-name" value="{{ active_application.from_bank }}" readonly>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div id="loading-spinner" class="text-center my-3" style="display: none">
+                                    <div class="spinner-border text-primary spinner-border-custom" role="status">
+                                        <span class="sr-only">Загрузка...</span>
+                                    </div>
+                                    <p class="mt-2">Отправка чека...</p>
+                                </div>
+
+                                {% if active_application.status == 'processing' %}
+                                <button type="button" id="confirmation-btn" class="btn btn-success">Подтвердить</button>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card border-0">
+                <div class="card-body text-center">
+                    <form id="take-application-form" method="post" action="{% url 'take_application' %}">
+                        {% csrf_token %}
+                        <button type="submit" id="take-application-btn" class="btn btn-success btn-lg">Взять заявку</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Модальное окно для отчета о проблеме остаётся на странице -->
+    <div class="modal fade" id="problemModal" tabindex="-1" role="dialog" aria-labelledby="problemModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="problemModalLabel">Сообщите о проблеме для заявки ID: <span id="problem-application-id"></span></h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="problem-form" method="post" action="{% url 'report_problem' %}">
+              {% csrf_token %}
+              <input type="hidden" id="problem-application-id-input" name="application_id" value="{{ active_application.id }}">
+
+              <div class="form-group">
+                <label for="problem-select">Выберите проблему</label>
+                <select class="form-control" id="problem-select" name="problem" required>
+                  <option value="" disabled selected>Выберите причину проблемы</option>
+                  <option value="Карта получателя заблокирована">Карта получателя заблокирована</option>
+                  <option value="Проблемы с отправлением платежа">Проблемы с отправлением платежа</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-danger">Отправить</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Подключаем необходимые скрипты Bootstrap 4, jQuery и Select2 -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- Подключаем ваши статические файлы -->
+    <script>
+        const banksData = {{ banks_json|safe }};
+
+        const takeApplicationUrl = "{% url 'take_application' %}";
+        {#const userApplicationsUrl = "{% url 'user_applications' %}";#}
+        const userApplicationsUrl = "{% url 'active_application' %}";
+        const confirmApplicationsUrl = "{% url 'confirm_application' %}";
+        const activeApplication = "{{ active_application }}";
+        const reportProblemUrl = "{% url 'report_problem' %}";
+        const socketDomain = new WebSocket('ws://{{ websocket_url }}/ws/update/');
+
+    </script>
+    <script src="{% static 'websocket.js' %}"></script>
+    <script src="{% static 'csrf_token.js' %}"></script>
+    <script src="{% static 'show_notification.js' %}"></script>
+    <script src="{% static 'show_modal.js' %}"></script>
+    <script>
+    </script>
+    <script src="{% static 'show_banks.js' %}"></script>
+    <script src="{% static 'upload_receipt.js' %}"></script>
+    <script src="{% static 'update_page.js' %}"></script>
+    <script src="{% static 'confirm.js' %}"></script>
+    <script src="{% static 'timer.js' %}"></script>
+    <script src="{% static 'report.js' %}"></script>
+
+    <script>
+        $(document).ready(function(){
+            // Инициализация Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            });
+
+            // Обработчик кнопки "Проблема с оплатой"
+            $('#report-problem-btn').on('click', function(){
+                $('#problem-application-id').text('{{ active_application.id }}');
+                $('#problem-application-id-input').val('{{ active_application.id }}');
+                $('#problemModal').modal('show');
+            });
+
+            // Обработчик предварительного просмотра файла с валидацией
+            const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+            const maxSize = 5 * 1024 * 1024; // 5 МБ
+
+            $('#receipt-file').on('change', function(event) {
+                const preview = $('#file-preview');
+                const file = event.target.files[0];
+
+                if (file) {
+                    // Валидация типа файла
+                    if (!allowedTypes.includes(file.type)) {
+                        showNotification('Недопустимый тип файла. Пожалуйста, загрузите изображение или PDF.', 'danger');
+                        $(this).val(''); // Очистка выбранного файла
+                        preview.empty();
+                        return;
+                    }
+
+                    // Валидация размера файла
+                    if (file.size > maxSize) {
+                        showNotification('Файл слишком большой. Максимальный размер 5 МБ.', 'danger');
+                        $(this).val(''); // Очистка выбранного файла
+                        preview.empty();
+                        return;
+                    }
+
+                    const fileType = file.type;
+                    preview.empty(); // Очистка предыдущего превью
+
+                    if (fileType.startsWith('image/')) {
+                        const img = $('<img>').attr('src', URL.createObjectURL(file));
+                        img.on('load', function() {
+                            URL.revokeObjectURL(this.src);
+                        });
+                        preview.append(img);
+                    } else if (fileType === 'application/pdf') {
+                        const iframe = $('<iframe>').attr({
+                            src: URL.createObjectURL(file),
+                            width: '100%',
+                            height: '500px'
+                        });
+                        preview.append(iframe);
+                    } else {
+                        preview.text('Предварительный просмотр для этого типа файла недоступен.');
+                    }
+                } else {
+                    preview.empty();
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

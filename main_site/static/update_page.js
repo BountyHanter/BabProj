@@ -64,38 +64,24 @@ function updatePageData(notification, type_notification, modal) {
         const doc = parser.parseFromString(html, 'text/html');
 
         // Обновляем контейнер с активной заявкой
-        const activeApplicationContent = doc.querySelector('#applications-container');
+        const activeApplicationContent = doc.querySelector('#active-application-section');
         if (activeApplicationContent) {
-            document.querySelector('#applications-container').innerHTML = activeApplicationContent.innerHTML;
+            document.querySelector('#active-application-section').innerHTML = activeApplicationContent.innerHTML;
         }
-
-        // Обновляем остальные заявки
-        const otherApplicationsContent = doc.querySelector('#other-applications-section');
-        if (otherApplicationsContent) {
-            document.querySelector('#other-applications-section').innerHTML = otherApplicationsContent.innerHTML;
-        }
-
-        // Обновляем модальное окно
-        const modalContent = doc.querySelector('#receiptModal');
-        if (modalContent) {
-            document.querySelector('#receiptModal').innerHTML = modalContent.innerHTML;
-        }
-
-        if (modal) {
-            closeModal()
-        }
-
-        // Инициализация Select2 и заполнение банков
-        populateBanksSelect(banksData);
-
-        // Таймер
-        initTimer();
-
 
         // Показ уведомления, если оно нужно
         if (notification) {
             showNotification(notification, type_notification);
         }
+
+        // Повторная инициализация Select2 после обновления
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            width: '100%'
+        });
+
+        // Таймер
+        initTimer();
 
         // Заново инициализируем CSRF-токен, если он обновился
         const newCsrfToken = getCookie('csrftoken');

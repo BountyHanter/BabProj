@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -24,6 +25,8 @@ from database.views.auth_views import user_login
 from database.views.web_views import merchant_dashboard
 
 urlpatterns = [
+    #path('Yay2tieW/', admin.site.urls),
+
     path('admin/', admin.site.urls),
     path('api/', include('database.urls')),
     path('', include('main_site.urls')),
@@ -32,12 +35,10 @@ urlpatterns = [
     path('login/', user_login, name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
 
-    # Web pages
+    # Статистика для мерчантов
     path('statistics/', merchant_dashboard, name='merchant_dashboard'),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-handler404 = 'main_site.views.custom_404'
-handler500 = 'main_site.views.custom_500'

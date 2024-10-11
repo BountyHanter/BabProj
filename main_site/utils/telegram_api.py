@@ -1,13 +1,10 @@
 import os
-
+from dotenv import load_dotenv
 import requests
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 
-from database.models import Application
-
-from dotenv import load_dotenv
-
+from database.models.application import Application
 
 load_dotenv()
 SITE_URL = os.getenv('SITE_URL')
@@ -22,7 +19,8 @@ def send_application_data(application_id):
     user_id = application.user_id
     receipt_link = application.receipt_link
     amount = application.amount
-    bank = application.bank_name
+    from_bank = application.from_bank
+    to_bank = application.to_bank
 
     # Шаг 3: Ищем пользователя по user_id в таблице auth_user
     user = get_object_or_404(User, id=user_id)
@@ -35,7 +33,8 @@ def send_application_data(application_id):
         "username": username,
         "url": f"{SITE_URL}{receipt_link}",
         "amount": float(amount),
-        "bank": bank,
+        "from_bank": from_bank,
+        "to_bank": to_bank,
     }
 
     response = requests.post(url, json=data)
@@ -77,7 +76,6 @@ def send_problem_data(application_id):
 
 
 def send_request_withdrawal(amount, available_amount, username):
-
     url = f'http://{TG_FLASK_ADDRESS}/api/request_withdrawal'
     data = {
         "amount": amount,

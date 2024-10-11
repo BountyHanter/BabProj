@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Авторизация</title>
     <link rel="icon" type="image/x-icon" href="{% static 'favicon.png' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body, html {
@@ -36,6 +37,8 @@
         {% endif %}
         <form action="{% url 'login' %}" method="POST">
             {% csrf_token %}
+            <!-- Добавляем скрытое поле для передачи 'next' -->
+            <input type="hidden" name="next" value="{{ next }}">
             <div class="form-group">
                 <label for="username">Логин</label>
                 <input type="text" class="form-control" id="username" name="username" placeholder="Введите логин" required>

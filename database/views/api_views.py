@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from database.models import Application
+from database.models.application import Application
 from database.serializers import ApplicationSerializer
 from database.utils.authenticate_client import authenticate_client
 
@@ -110,9 +110,10 @@ class ApplicationUpdateView(APIView):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+
 class BanksListAPIView(APIView):
     """
-    API view для возврата списка банков из файла banks.json
+    API view для возврата списка банков с полями bank_name и id
     """
     def get(self, request, *args, **kwargs):
         # Аутентификация через Client-Id и Api-Key
@@ -121,14 +122,22 @@ class BanksListAPIView(APIView):
             return error_response
 
         # Путь к файлу banks.json
-        file_path = os.path.join(settings.BASE_DIR, 'database', 'banks.json')
+        file_path = os.path.join(settings.BASE_DIR, 'main_site', 'banks.json')
 
         # Чтение файла и загрузка данных
         with open(file_path, 'r', encoding='utf-8') as f:
             banks_data = json.load(f)
 
+        # Извлечение только полей bank_name и id (schema)
+        banks_list = [
+            {
+                'id': bank.get('schema'),
+                'name': bank.get('bankName'),
+            } for bank in banks_data.get('dictionary', [])
+        ]
+
         # Возвращаем данные в виде JSON ответа через API
-        return Response(banks_data)
+        return Response(banks_list)
 
 
 class ApplicationStatusView(APIView):

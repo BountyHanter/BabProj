@@ -1,4 +1,5 @@
 const socket = socketDomain;
+console.log(socketDomain)
 
 socket.onopen = function(event) {
     console.log('WebSocket connection established.');
@@ -11,7 +12,7 @@ socket.onmessage = function(event) {
     if (data.action === 'update') {
         console.log(`Заявка с ID ${data.application_id} обновлена.`);
         // Вызываем функцию для обновления данных на клиенте
-        updatePageData();
+        updatePageData('Заявка принята', 'success');
     } else if (data.action === 'cancel') {
         console.log(`Заявка с ID ${data.application_id} отменена.`);
         // Здесь вы можете добавить любую логику, например, обновление страницы

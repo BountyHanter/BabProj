@@ -1,4 +1,4 @@
-from database.models import Application
+from database.models.application import Application
 from finApplications.globals import active_timers
 
 
