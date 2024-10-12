@@ -11,7 +11,7 @@ from database.models.application import Application
 
 
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'type', 'status', 'amount', 'created_at', 'completed_time', 'merchant_id')
+    list_display = ('id', 'type', 'status', 'amount', 'formatted_created_at', 'formatted_completed_time', 'merchant_id')
     list_filter = ('status', 'type', 'created_at', 'completed_time')
     search_fields = ('from_bank', 'to_bank', 'merchant_id')
     sortable_by = ['created_at', 'completed_time', 'amount']

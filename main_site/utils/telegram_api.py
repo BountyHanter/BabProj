@@ -36,7 +36,7 @@ def send_application_data(application_id):
         "from_bank": from_bank,
         "to_bank": to_bank,
     }
-
+    print(data)
     response = requests.post(url, json=data)
 
     # Логируем результат

@@ -136,11 +136,11 @@ def generate_excel_report(request, filter_data):
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
     wb.save(report_path)
 
-    report_link = f'/reports/{report_name}'
+    report_link = f'/media/reports/{report_name}'
 
     report = Report.objects.create(
         user=request.user,
-        report_link= report_link,
+        report_link=report_link,
         application_count=applications.count()
     )
 
@@ -148,3 +148,4 @@ def generate_excel_report(request, filter_data):
     response['Content-Disposition'] = f'attachment; filename={report_name}'
 
     return f'{SITE_URL}{report_link}'
+

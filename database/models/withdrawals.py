@@ -53,6 +53,13 @@ class WithdrawalRequest(models.Model):
                         'new': new_value
                     }
 
+            # Проверяем, был ли статус изменён с другого на 'canceled'
+            if old_instance.status != 'canceled' and self.status == 'canceled':
+                # Возвращаем средства на счёт пользователя
+                user_profile = self.user.profile
+                user_profile.earnings += self.amount
+                user_profile.save()
+
         # Устанавливаем время исполнения, если статус изменяется на 'completed' или 'canceled'
         if self.status in ['completed', 'canceled']:
             self.execution_date = timezone.now()

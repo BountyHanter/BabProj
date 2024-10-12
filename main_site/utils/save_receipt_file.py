@@ -56,6 +56,8 @@ def upload_receipt(request):
             application.has_receipt = True
             application.receipt_link = file_url
             application.from_bank = bank_name
+            application.status = 'processing'
+            application.save()
 
             # Отправляем данные через send_application_data
             result, error = send_application_data(application_id)
@@ -63,8 +65,6 @@ def upload_receipt(request):
             if error:
                 return JsonResponse({"error": error}, status=400)
 
-            application.status = 'processing'
-            application.save()
             # Возвращаем успешный ответ с ссылкой на файл
             return JsonResponse({
                 "status": "success",
@@ -74,4 +74,5 @@ def upload_receipt(request):
             return JsonResponse({"error": str(e)}, status=400)
 
     return JsonResponse({"error": "Неподдерживаемый метод"}, status=405)
+
 

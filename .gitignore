@@ -1,5 +1,6 @@
 # Игнорировать виртуальное окружение Python
 .venv/
+venv/
 .env
 .env_for_server
 

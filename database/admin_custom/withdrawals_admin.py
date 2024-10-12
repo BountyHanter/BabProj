@@ -35,24 +35,27 @@ class WithdrawalRequestAdmin(admin.ModelAdmin):
         # Начинаем с базовых readonly_fields
         readonly_fields = list(self.readonly_fields)
 
-        # Проверяем наличие кастомного разрешения
-        if request.user.has_perm('database.edit_processing_withdrawal'):
-            if obj and obj.status == 'processing':
-                # Разрешаем редактировать только 'status' и 'transaction_hash'
-                editable_fields = ['status', 'transaction_hash']
-                # Получаем все поля модели
-                all_fields = [field.name for field in self.opts.local_fields]
-                # Добавляем все поля, кроме 'status' и 'transaction_hash', в readonly_fields
-                readonly_fields += [field for field in all_fields if
-                                    field not in editable_fields and field not in self.readonly_fields]
-            else:
-                # Если статус не 'processing', делаем все поля readonly
-                all_fields = [field.name for field in self.opts.local_fields]
-                readonly_fields += [field for field in all_fields if field not in self.readonly_fields]
-        else:
-            # Если пользователь не имеет разрешения, делаем все поля readonly
+        # Если объект существует и его статус 'completed' или 'canceled', делаем все поля readonly
+        if obj and obj.status in ['completed', 'canceled']:
             all_fields = [field.name for field in self.opts.local_fields]
             readonly_fields += [field for field in all_fields if field not in self.readonly_fields]
+        else:
+            # Проверяем наличие кастомного разрешения
+            if request.user.has_perm('database.edit_processing_withdrawal'):
+                if obj and obj.status == 'processing':
+                    # Разрешаем редактировать только 'status' и 'transaction_hash'
+                    editable_fields = ['status', 'transaction_hash']
+                    all_fields = [field.name for field in self.opts.local_fields]
+                    readonly_fields += [field for field in all_fields if
+                                        field not in editable_fields and field not in self.readonly_fields]
+                else:
+                    # Если статус не 'processing', делаем все поля readonly
+                    all_fields = [field.name for field in self.opts.local_fields]
+                    readonly_fields += [field for field in all_fields if field not in self.readonly_fields]
+            else:
+                # Если пользователь не имеет разрешения, делаем все поля readonly
+                all_fields = [field.name for field in self.opts.local_fields]
+                readonly_fields += [field for field in all_fields if field not in self.readonly_fields]
 
         return readonly_fields
 

@@ -29,8 +29,8 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["dev.babdata.cloud", "127.0.0.1", "localhost"]
-
+#ALLOWED_HOSTS = ["dev.babdata.cloud", "127.0.0.1", "localhost", "193.124.47.164"]
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 INSTALLED_APPS = [
