@@ -47,6 +47,7 @@ Thumbs.db
 # Файлы для сервера и дева
 finApplications/settings_for_server.py
 finApplications/settings_for_dev.py
+finApplications/settings.py
 faker1.py
 ТЗ.txt
 ТЗ_2.md

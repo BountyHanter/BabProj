@@ -7,8 +7,7 @@ class UserProfileInline(admin.StackedInline):
     model = UserProfile
     can_delete = False
     verbose_name_plural = 'Профиль пользователя'
-    fields = ('percentage', 'earnings', 'active', 'min_amount', 'max'
-                                                                '_amount')  # Добавляем поле earnings
+    fields = ('percentage', 'earnings', 'active', 'min_amount', 'max_amount', 'problems_chat_id', 'receipt_chat_id')
     readonly_fields = ['earnings', ]  # Если хотите сделать поле только для чтения, добавьте сюда
 
     def get_readonly_fields(self, request, obj=None):

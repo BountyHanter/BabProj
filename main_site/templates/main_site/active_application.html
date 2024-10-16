@@ -183,8 +183,6 @@
 </nav>
 
 <div class="container mt-5">
-    <h1 class="text-center mb-4">Активная Заявка</h1>
-
     <!-- Блок для отображения уведомлений -->
     <div id="notification-container" style="position: fixed; top: 60px; right: 20px; z-index: 9999;"></div>
 
@@ -232,8 +230,8 @@
                 <!-- Контейнер для деталей заявки всегда отображается -->
                 <div id="receipt-container" class="mt-4">
                     <div class="card">
-                        <div class="card-header">
-                            <h5 class="modal-title" id="receiptModalLabel">Заявка ID: <span id="application-id">{{ active_application.id }}</span></h5>
+                         <div class="card-header">
+                            <h5 class="modal-title" id="receiptModalLabel">Заявка ID: <span id="application-id" hidden>{{ active_application.id }}</span></h5>
                         </div>
                         <div class="card-body">
                             <form id="receipt-form" action="{% url 'upload_receipt' %}" method="post" enctype="multipart/form-data">
@@ -421,25 +419,9 @@
                         return;
                     }
 
-                    const fileType = file.type;
-                    preview.empty(); // Очистка предыдущего превью
-
-                    if (fileType.startsWith('image/')) {
-                        const img = $('<img>').attr('src', URL.createObjectURL(file));
-                        img.on('load', function() {
-                            URL.revokeObjectURL(this.src);
-                        });
-                        preview.append(img);
-                    } else if (fileType === 'application/pdf') {
-                        const iframe = $('<iframe>').attr({
-                            src: URL.createObjectURL(file),
-                            width: '100%',
-                            height: '500px'
-                        });
-                        preview.append(iframe);
-                    } else {
-                        preview.text('Предварительный просмотр для этого типа файла недоступен.');
-                    }
+                    // Показать имя загруженного файла
+                    preview.empty(); // Очистка предыдущего контента
+                    preview.text(`Выбран файл "${file.name}".`);
                 } else {
                     preview.empty();
                 }
@@ -449,3 +431,4 @@
 
 </body>
 </html>
+

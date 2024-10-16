@@ -13,28 +13,55 @@ from database.utils.authenticate_client import authenticate_client
 
 class ApplicationCreateView(APIView):
     """
-    API view который позволяет создать новую заявку.
+    API view который позволяет создать новую заявку или несколько заявок.
     """
+
     def post(self, request):
         # Аутентификация через Client-Id и Api-Key
         error_response, api_key_obj = authenticate_client(request)
         if error_response:
             return error_response
 
-        # Обрабатываем данные заявки
-        serializer = ApplicationSerializer(data=request.data)
-        if serializer.is_valid():
-            # Добавляем merchant_id из найденного APIKey
-            application = serializer.save(merchant_id=api_key_obj.user.id)
+        # Проверяем, что в запросе передан список заявок
+        if not isinstance(request.data, list):
             return Response({
-                "status": "created",
-                "id": application.id
-            }, status=status.HTTP_201_CREATED)
+                "status": "error",
+                "description": "Ожидается список заявок."
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Для каждой заявки в списке выполняем сериализацию и сохранение
+        created_applications = []
+        errors = []
+
+        for index, application_data in enumerate(request.data):
+            serializer = ApplicationSerializer(data=application_data)
+            if serializer.is_valid():
+                # Добавляем merchant_id из найденного APIKey
+                application = serializer.save(merchant_id=api_key_obj.user.id)
+                created_applications.append({
+                    "status": "created",
+                    "id": application.id
+                })
+            else:
+                # Добавляем индекс заявки, которая вызвала ошибку
+                errors.append({
+                    "status": "error",
+                    "index": index,
+                    "description": serializer.errors
+                })
+
+        # Если есть ошибки, возвращаем их вместе с успешными созданиями
+        if errors:
+            return Response({
+                "status": "partial_error",
+                "created": created_applications,
+                "errors": errors
+            }, status=status.HTTP_207_MULTI_STATUS)
 
         return Response({
-            "status": "error",
-            "description": serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
+            "status": "success",
+            "created": created_applications
+        }, status=status.HTTP_201_CREATED)
 
 
 class ApplicationUpdateView(APIView):
@@ -186,3 +213,4 @@ class ApplicationStatusView(APIView):
             "application_status": application.status,
             "application_id": application.id,
         }, status=status.HTTP_200_OK)
+

@@ -32,6 +32,9 @@ class UserProfile(models.Model):
         verbose_name='Максимальная сумма заявки'
     )
     active = models.BooleanField(default=True, verbose_name='Возможность обрабатывать заявки')
+    receipt_chat_id = models.CharField(null=True, blank=True, max_length=255, verbose_name='ID чата для чеков')
+    problems_chat_id = models.CharField(null=True, blank=True, max_length=255, verbose_name='ID чата '
+                                                                                            'для проблем с оплатой')
 
     def __str__(self):
         return f"Профиль для {self.user.username}"

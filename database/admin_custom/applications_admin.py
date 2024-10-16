@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 
 from django.contrib import admin
@@ -5,18 +6,24 @@ from django.db.models import Sum, Count
 from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils import timezone
+from django.utils.html import format_html
 from django.utils.timezone import now
 
 from database.models.application import Application
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'type', 'status', 'amount', 'formatted_created_at', 'formatted_completed_time', 'merchant_id')
+    list_display = ('id', 'type', 'status', 'amount', 'formatted_created_at', 'formatted_completed_time', 'merchant_id',
+                    '_user')
     list_filter = ('status', 'type', 'created_at', 'completed_time')
     search_fields = ('from_bank', 'to_bank', 'merchant_id')
     sortable_by = ['created_at', 'completed_time', 'amount']
     ordering = ['-created_at']
-    readonly_fields = ('receipt_link',)
+    readonly_fields = ('clickable_receipt_link', )
 
     def get_readonly_fields(self, request, obj=None):
         """
@@ -32,7 +39,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         # Проверяем наличие кастомного разрешения
         if request.user.has_perm('database.edit_note_and_status'):
             if obj:
-                if obj.status != 'completed':
+                if obj.status not in ['completed', 'canceled']:
                     # Если статус не 'completed', делаем все поля readonly, кроме 'status' и 'note'
                     editable_fields = ['status', 'note']
                     all_fields = [field.name for field in self.opts.local_fields]
@@ -118,3 +125,28 @@ class ApplicationAdmin(admin.ModelAdmin):
 
     def delete_model(self, request, obj):
         obj.delete(user=request.user)
+
+    def clickable_receipt_link(self, obj):
+        if obj.receipt_link:
+            domain = os.getenv('SITE_URL')
+            full_url = f"{domain}{obj.receipt_link}"
+            return format_html(f'<a href="{full_url}" target="_blank">{full_url}</a>')
+        return "Нет чека"
+
+    clickable_receipt_link.short_description = "Ссылка на чек"
+
+    def formfield_for_choice_field(self, db_field, request, **kwargs):
+        """
+        Ограничиваем выбор статуса, если у пользователя есть специальное право,
+        но даем полный доступ суперпользователям.
+        """
+        if db_field.name == "status":
+            # Если пользователь суперюзер, ему доступны все статусы
+            if not request.user.is_superuser:
+                # Если пользователь имеет право на редактирование статусов и поля статуса
+                if request.user.has_perm('database.edit_note_and_status'):
+                    # Ограничиваем выбор значениями 'Canceled' и 'Completed'
+                    kwargs['choices'] = [
+                        choice for choice in db_field.choices if choice[0] in ['canceled', 'completed']
+                    ]
+        return super().formfield_for_choice_field(db_field, request, **kwargs)

@@ -8,10 +8,10 @@ from database.models.api_keys import APIKey
 class APIKeyInlineForm(forms.ModelForm):
     # Добавляем новое поле для ввода нового api_key
     new_api_key = forms.CharField(
-        label="Новый Client Secret",
+        label="Новый Api-Key",
         required=False,
         widget=forms.PasswordInput,
-        help_text="Введите новый Client Secret. Если оставить поле пустым, текущий секрет останется без изменений."
+        help_text="Введите новый Api-Key. Если оставить поле пустым, текущий секрет останется без изменений."
     )
 
     class Meta:
@@ -42,4 +42,5 @@ class APIKeyInline(admin.StackedInline):
     def api_key_display(self, obj):
         return obj.api_key if obj.api_key else "Нет ключа"
 
-    api_key_display.short_description = "Хэшированный Client Secret"
+    api_key_display.short_description = "Хэшированный Api-Key"
+
