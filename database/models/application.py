@@ -113,6 +113,10 @@ class Application(models.Model):
                         'new': new_value_field
                     }
 
+        # Обновляем user_id, если изменилось поле _user
+        if self._user:
+            self.user_id = self._user.id
+
         # Устанавливаем время завершения, если статус изменяется на 'completed' или 'canceled'
         if self.status in ['completed', 'canceled']:
             self.completed_time = timezone.now()
@@ -132,3 +136,4 @@ class Application(models.Model):
         if user:
             log_application_action(self, user, 'delete')
         super().delete(*args, **kwargs)
+

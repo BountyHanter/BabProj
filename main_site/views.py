@@ -1,4 +1,6 @@
 from datetime import timedelta
+
+import requests
 from dotenv import load_dotenv
 import json
 import os
@@ -7,7 +9,7 @@ from django.db.models import Sum
 from django.shortcuts import render
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, FileResponse, Http404
+from django.http import JsonResponse, FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 
@@ -199,9 +201,19 @@ def generate_report(request):
 
 @login_required
 def protected_media(request, path):
+    # Путь к локальному файлу
     media_path = os.path.join(settings.MEDIA_ROOT, path)
+
+    # Проверяем, есть ли файл на локальном сервере
     if os.path.exists(media_path):
         return FileResponse(open(media_path, 'rb'))
+
+    # Если файл отсутствует на локальном сервере, запрашиваем его на удалённом
+    media_url = f'http://147.45.245.11/media/{path}'
+    response = requests.get(media_url)
+
+    if response.status_code == 200:
+        return HttpResponse(response.content, content_type=response.headers['Content-Type'])
     else:
         raise Http404("Файл не найден.")
 
@@ -242,4 +254,5 @@ def protected_media(request, path):
 #         except Exception as e:
 #             return JsonResponse({"status": "error", "message": f"Error: {str(e)}"}, status=400)
 #     return JsonResponse({"status": "error", "message": "Only POST requests allowed"}, status=405)
+
 

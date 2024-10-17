@@ -1,8 +1,6 @@
-import os
-
 from dotenv import load_dotenv
+import requests
 
-from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_protect
@@ -13,7 +11,7 @@ from main_site.utils.get_banks import get_bank_name_by_index
 from main_site.utils.telegram_api import send_application_data
 
 load_dotenv()
-SITE_URL = os.getenv('SITE_URL')
+MEDIA_SERVER_URL = 'http://147.45.245.11/upload/'  # URL для загрузки файла на удалённый сервер
 
 
 @csrf_protect
@@ -43,18 +41,27 @@ def upload_receipt(request):
 
             # Проверяем тип файла (должен быть PDF или изображение)
             if not is_valid_file_type(receipt_file):
-                return JsonResponse({"error": "Недопустимый формат файла. Разрешены только PDF и изображения (JPEG, "
-                                              "PNG)."}, status=400)
+                return JsonResponse({"error": "Недопустимый формат файла. Разрешены только PDF и изображения (JPEG, PNG)."}, status=400)
 
-            # Сохраняем файл с уникальным именем
+            # Генерируем уникальное имя файла
             unique_filename = generate_unique_filename(receipt_file.name)
-            fs = FileSystemStorage()
-            filename = fs.save(f"receipts/{unique_filename}", receipt_file)
-            file_url = fs.url(filename)
+
+            # Отправляем файл на удалённый сервер
+            files = {
+                'receipt': (unique_filename, receipt_file.read(), receipt_file.content_type)
+            }
+            response = requests.post(MEDIA_SERVER_URL, files=files)
+
+            if response.status_code != 200:
+                return JsonResponse({"error": "Ошибка загрузки файла на удалённый сервер"}, status=500)
+
+            # Получаем URL загруженного файла и сохраняем только относительный путь
+            file_url = response.json().get('file_url')
+            relative_file_url = file_url.replace('http://147.45.245.11', '')
 
             # Обновляем данные заявки
             application.has_receipt = True
-            application.receipt_link = file_url
+            application.receipt_link = relative_file_url  # Сохраняем относительный путь
             application.from_bank = bank_name
             application.status = 'processing'
             application.save()
@@ -65,7 +72,7 @@ def upload_receipt(request):
             if error:
                 return JsonResponse({"error": error}, status=400)
 
-            # Возвращаем успешный ответ с ссылкой на файл
+            # Возвращаем успешный ответ
             return JsonResponse({
                 "status": "success",
             })

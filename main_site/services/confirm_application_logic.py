@@ -10,6 +10,7 @@ from django.conf import settings  # Для работы с путями к ст�
 
 from database.models.application import Application
 from database.models.user_profile import UserProfile
+from finApplications.globals import active_timers
 
 
 def confirm_application(request):
@@ -48,6 +49,9 @@ def confirm_application(request):
             user_profile.earnings = Decimal(user_profile.earnings) + net_amount_in_usdt
             user_profile.save()
 
+            if application_id in active_timers:
+                del active_timers[application_id]
+
             # Обновляем заявку
             application.status = 'completed'
             application.net_amount_in_usdt = net_amount_in_usdt
@@ -62,3 +66,4 @@ def confirm_application(request):
             return JsonResponse({'status': 'error', 'error': 'Неверный статус заявки'}, status=400)
 
     return JsonResponse({'status': 'error', 'error': 'Неверный запрос'}, status=400)
+
