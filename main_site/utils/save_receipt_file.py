@@ -1,19 +1,17 @@
-import os
-
 from dotenv import load_dotenv
+import requests
 
-from database.models import Application
-from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 
+from database.models.application import Application
 from main_site.utils.generate_fiilename_and_valid_file import generate_unique_filename, is_valid_file_type
-from main_site.utils.get_banks import get_banks
+from main_site.utils.get_banks import get_bank_name_by_index
 from main_site.utils.telegram_api import send_application_data
 
 load_dotenv()
-SITE_URL = os.getenv('SITE_URL')
+MEDIA_SERVER_URL = 'http://147.45.245.11/upload/'  # URL для загрузки файла на удалённый сервер
 
 
 @csrf_protect
@@ -30,8 +28,7 @@ def upload_receipt(request):
 
             # Получаем ID банка и проверяем его существование
             bank_id = request.POST.get('bank_id')
-            banks = get_banks()
-            bank_name = next((bank['name'] for bank in banks if str(bank['id']) == bank_id), None)
+            bank_name = get_bank_name_by_index(bank_id)
             if not bank_name:
                 return JsonResponse({"error": "Банк с данным ID не найден"}, status=400)
 
@@ -46,34 +43,43 @@ def upload_receipt(request):
             if not is_valid_file_type(receipt_file):
                 return JsonResponse({"error": "Недопустимый формат файла. Разрешены только PDF и изображения (JPEG, PNG)."}, status=400)
 
-            # Сохраняем файл с уникальным именем
+            # Генерируем уникальное имя файла
             unique_filename = generate_unique_filename(receipt_file.name)
-            fs = FileSystemStorage()
-            filename = fs.save(f"receipts/{unique_filename}", receipt_file)
-            file_url = fs.url(filename)
+
+            # Отправляем файл на удалённый сервер
+            files = {
+                'receipt': (unique_filename, receipt_file.read(), receipt_file.content_type)
+            }
+            response = requests.post(MEDIA_SERVER_URL, files=files)
+
+            if response.status_code != 200:
+                return JsonResponse({"error": "Ошибка загрузки файла на удалённый сервер"}, status=500)
+
+            # Получаем URL загруженного файла и сохраняем только относительный путь
+            file_url = response.json().get('file_url')
+            relative_file_url = file_url.replace('http://147.45.245.11', '')
 
             # Обновляем данные заявки
             application.has_receipt = True
-            application.receipt_link = file_url
-            application.bank_name = bank_name
+            application.receipt_link = relative_file_url  # Сохраняем относительный путь
+            application.from_bank = bank_name
             application.status = 'processing'
             application.save()
 
             # Отправляем данные через send_application_data
             result, error = send_application_data(application_id)
+
             if error:
                 return JsonResponse({"error": error}, status=400)
 
-
-            # Возвращаем успешный ответ с ссылкой на файл
+            # Возвращаем успешный ответ
             return JsonResponse({
                 "status": "success",
-                "receipt_link": f"{SITE_URL}{file_url}",
-                "bank_name": bank_name
             })
 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
 
     return JsonResponse({"error": "Неподдерживаемый метод"}, status=405)
+
 

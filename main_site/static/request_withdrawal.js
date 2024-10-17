@@ -18,7 +18,6 @@ $(document).ready(function() {
             type: 'POST',
             headers: {
                 'X-CSRFToken': csrfToken
-                // 'X-Requested-With' автоматически добавляется jQuery как 'XMLHttpRequest'
             },
             data: {
                 'amount': amount // Передаём введённую сумму в запросе
@@ -49,6 +48,16 @@ $(document).ready(function() {
                 // Попытка извлечь сообщение об ошибке из ответа сервера
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     errorMessage = xhr.responseJSON.message;
+                } else if (xhr.responseText) {
+                    try {
+                        // Попытка разобрать текстовый ответ как JSON
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.message) {
+                            errorMessage = response.message;
+                        }
+                    } catch (e) {
+                        console.error('Ошибка разбора ответа:', e);
+                    }
                 }
 
                 showNotification(errorMessage, 'danger');

@@ -46,6 +46,8 @@
                 <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
                 <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
                 <option value="canceled" {% if request.GET.status == 'canceled' %}selected{% endif %}>Canceled</option>
+                <option value="manual" {% if request.GET.status == 'manual' %}selected{% endif %}>Manual</option>
+
             </select>
         </div>
 
@@ -63,6 +65,38 @@
 
         <button type="submit" class="btn btn-primary mb-2">Фильтровать</button>
     </form>
+
+    <div class="container custom-container mt-5">
+      <div class="row">
+        <!-- Количество созданных заявок -->
+        <div class="col-md-4">
+          <div class="card text-white bg-primary mb-3">
+            <div class="card-header">Количество созданных заявок</div>
+            <div class="card-body">
+              <h5 class="card-title">{{ total_created }}</h5>
+            </div>
+          </div>
+        </div>
+        <!-- Количество выполненных заявок -->
+        <div class="col-md-4">
+          <div class="card text-white bg-success mb-3">
+            <div class="card-header">Количество выполненных заявок</div>
+            <div class="card-body">
+              <h5 class="card-title">{{ total_completed }}</h5>
+            </div>
+          </div>
+        </div>
+        <!-- Общая сумма заявок в рублях -->
+        <div class="col-md-4">
+          <div class="card text-white bg-info mb-3">
+            <div class="card-header">Общая сумма заявок в рублях</div>
+            <div class="card-body">
+              <h5 class="card-title">{{ total_amount }} ₽</h5>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Контейнер для таблицы с прокруткой -->
     <div class="table-container">
@@ -85,10 +119,18 @@
                         {% endif %}
                     </a>
                 </th>
-                <th scope="col" class="sortable-column {% if current_order_by == 'bank_name' %}active-sort{% endif %}">
-                    <a href="?order_by=bank_name&direction={% if current_order_by == 'bank_name' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
-                        Название банка
-                        {% if current_order_by == 'bank_name' %}
+                <th scope="col" class="sortable-column {% if current_order_by == 'to_bank' %}active-sort{% endif %}">
+                    <a href="?order_by=to_bank&direction={% if current_order_by == 'to_bank' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
+                        Банк получателя
+                        {% if current_order_by == 'to_bank' %}
+                            <span class="sort-icon">{% if current_direction == 'asc' %}▲{% else %}▼{% endif %}</span>
+                        {% endif %}
+                    </a>
+                </th>
+                <th scope="col" class="sortable-column {% if current_order_by == 'from_bank' %}active-sort{% endif %}">
+                    <a href="?order_by=from_bank&direction={% if current_order_by == 'from_bank' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
+                        Банк отправителя
+                        {% if current_order_by == 'from_bank' %}
                             <span class="sort-icon">{% if current_direction == 'asc' %}▲{% else %}▼{% endif %}</span>
                         {% endif %}
                     </a>
@@ -150,7 +192,8 @@
             <tr>
                 <th scope="row">{{ application.id }}</th>
                 <td>{{ application.type }}</td>
-                <td>{{ application.bank_name }}</td>
+                <td>{{ application.to_bank }}</td>
+                <td>{{ application.from_bank }}</td>
                 <td>{{ application.status }}</td>
                 <td>{{ application.amount }}</td>
                 <td>{{ application.created_at|date:"d.m.Y H:i" }}</td>
@@ -159,7 +202,6 @@
                 <td>{% if application.receipt_link %}<a href="{{ application.receipt_link }}" target="_blank">Ссылка</a>{% else %}N/A{% endif %}</td>
                 <td>{{ application.merchant_id }}</td>
                 <td>{{ application.user_id }}</td>
-                <td>{{ application.customer }}</td>
             </tr>
             {% empty %}
             <tr>

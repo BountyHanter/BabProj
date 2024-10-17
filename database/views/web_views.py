@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-from database.models import Application
+from database.models.application import Application
 
 
 @login_required
@@ -35,9 +35,16 @@ def merchant_dashboard(request):
 
     applications = applications.order_by(order_by)
 
+    total_created = applications.total_created()
+    total_completed = applications.total_completed()
+    total_amount = applications.total_amount()
+
     context = {
         'applications': applications,
         'current_order_by': order_by.strip('-'),
         'current_direction': direction,
+        'total_created': total_created,
+        'total_completed': total_completed,
+        'total_amount': total_amount,
     }
     return render(request, 'database/statistics.html', context)

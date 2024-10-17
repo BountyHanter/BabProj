@@ -1,6 +1,8 @@
 from django import forms
-from .models import APIKey
 from django.contrib.auth.hashers import make_password
+
+from database.models.api_keys import APIKey
+
 
 class APIKeyAdminForm(forms.ModelForm):
     new_api_key = forms.CharField(

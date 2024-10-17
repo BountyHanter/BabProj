@@ -47,9 +47,6 @@ function initTimer() {
     function updateTimer() {
         const now = new Date(); // Текущее время клиента
         const remainingTime = endTime - now;
-        console.log(now);
-        console.log(endTime);
-        console.log(takenTime);
 
         if (remainingTime <= 0) {
             timerElement.textContent = '00:00';

@@ -7,8 +7,7 @@
     <!-- Подключение Bootstrap CSS -->
     <link rel="icon" type="image/x-icon" href="{% static 'favicon.png' %}">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <!-- Подключаем Bootstrap 4 -->
+    <!-- Подключаем Bootstrap 4 -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
     <!-- Ваши дополнительные стили -->
@@ -27,13 +26,26 @@
         .navbar-gradient {
             background: linear-gradient(90deg, #ffffff, #000000);
         }
+        .nav-link {
+            border: 1px solid black; /* Обводка черным цветом */
+            border-radius: 5px; /* Скругление углов */
+            padding: 5px 10px; /* Внутренний отступ для кнопок */
+            margin: 5px; /* Внешний отступ для создания пространства между кнопками */
+            transition: all 0.3s ease; /* Плавный переход для эффектов */
+        }
+
+
+        .nav-link:hover {
+            background-color: lightgray; /* Изменение фона при наведении */
+            border-color: gray; /* Изменение цвета обводки при наведении */
+        }
     </style>
 </head>
 <body>
     <!-- Навигационная панель -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-gradient fixed-top">
-        <a class="navbar-brand text-dark" href="{% url 'user_applications' %}">BabData</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        <a class="navbar-brand text-dark" href="{% url 'active_application' %}">BabData</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -41,24 +53,27 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <!-- Левые кнопки навигации и курс -->
             <ul class="navbar-nav">
-                <li class="nav-item active">
-                    <a class="nav-link text-dark" href="{% url 'user_applications' %}">Заявки</a>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{% url 'active_application' %}">Активная заявка</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{% url 'user_applications' %}">Прошлые заявки</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{% url 'personal_cabinet' %}">Личный кабинет</a>
                 </li>
-                <li class="nav-item">
-                    <span class="navbar-text text-dark">
-                        Курс: {{ current_course }} | Время замера: {{ course_taken_at}}
+                <li class="nav-item d-flex align-items-center">
+                    <span class="navbar-text text-dark" data-toggle="tooltip" data-placement="top" title="Время замера: {{ course_taken_at }}">
+                        Курс: {{ current_course }}
                     </span>
                 </li>
             </ul>
 
             <!-- Правые элементы: Имя пользователя и кнопка "Выход" -->
             {% if user.is_authenticated %}
-            <ul class="navbar-nav ms-auto align-items-center">
+            <ul class="navbar-nav ml-auto align-items-center">
                 <li class="nav-item">
-                    <span class="navbar-text text-white me-3">
+                    <span class="navbar-text text-white mr-3">
                         {{ user.username }}
                     </span>
                 </li>
@@ -81,6 +96,9 @@
     </nav>
     <!-- Основной контейнер -->
     <div class="container">
+        <!-- Блок для отображения уведомлений -->
+        <div id="notification-container" style="position: fixed; top: 60px; right: 20px; z-index: 9999;"></div>
+
         <h1 class="text-center mb-4">Личный кабинет</h1>
         <!-- Статус пользователя -->
         <div class="row mb-4">
@@ -194,10 +212,19 @@
             </div>
         </div>
 
+        <!-- Кнопка страницы запроса отчёта -->
+        <div class="row mb-4">
+            <div class="col">
+                <a href="{% url 'generate_report' %}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                    Перейти к отчёту
+                </a>
+            </div>
+        </div>
+
         <!-- Кнопка для запроса вывода средств -->
         <div class="row mb-4">
             <div class="col">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#withdrawalModal">
+                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#withdrawalModal">
                     Запросить вывод средств
                 </button>
             </div>
@@ -221,7 +248,7 @@
                             <!-- Добавьте дополнительные поля, если необходимо -->
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
                             <button type="submit" class="btn btn-primary">Отправить запрос</button>
                         </div>
                     </form>
@@ -256,10 +283,13 @@
                                             <span class="badge bg-success">Выполнен</span>
                                         {% elif request.status == 'processing' %}
                                             <span class="badge bg-warning text-dark">В обработке</span>
+                                        {% elif request.status == 'canceled' %}
+                                            <span class="badge bg-danger">Отменён</span>
                                         {% else %}
                                             <span class="badge bg-secondary">Неизвестно</span>
                                         {% endif %}
                                     </td>
+
                                     <td>
                                         {% if request.execution_date %}
                                             {{ request.execution_date|date:"d.m.Y H:i" }}
@@ -284,14 +314,20 @@
 
     <!-- Подключение jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Подключение Popper.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
     <!-- Подключение Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <!-- Ваши дополнительные скрипты -->
     <script src="{% static 'request_withdrawal.js' %}"></script>
     <script src="{% static 'show_notification.js' %}"></script>
+
     <script>
-        const socketDomain = new WebSocket('wss://{{ websocket_url }}/ws/update/');
+        $(document).ready(function(){
+            $('[data-toggle="tooltip"]').tooltip();  // Инициализация подсказок
+        });
     </script>
 
 </body>
 </html>
+

@@ -1,13 +1,13 @@
 from django.urls import path
 from django.http import HttpResponseRedirect
 
-
 from main_site.services.confirm_application_logic import confirm_application
 from main_site.services.take_application_logic import take_application
 from main_site.utils.save_receipt_file import upload_receipt
 from main_site.utils.send_problem_data import report_problem
 from main_site.utils.send_request_withdrawal import request_withdrawal
-from main_site.views import get_application_info, user_applications_view, personal_cabinet, trigger_error
+from main_site.views import get_application_info, user_applications_view, personal_cabinet, \
+    active_application_view, generate_report, protected_media
 
 
 def redirect_to_applications(request):
@@ -16,6 +16,8 @@ def redirect_to_applications(request):
 
 urlpatterns = [
     path('', redirect_to_applications),  # Перенаправление с корневого URL на /statistics/
+
+    path('active_application/', active_application_view, name="active_application"),
 
     path('take_application/', take_application, name='take_application'),
     path('upload-receipt/', upload_receipt, name='upload_receipt'),
@@ -31,7 +33,10 @@ urlpatterns = [
 
     path('personal_cabinet/', personal_cabinet, name='personal_cabinet'),
     path('request_withdrawal/', request_withdrawal, name='request_withdrawal'),
-    path('trigger-error/', trigger_error),
+
+    path('generate_report/', generate_report, name='generate_report'),
+
+    path('media/<path:path>/', protected_media, name='protected_media'),
 
 ]
 

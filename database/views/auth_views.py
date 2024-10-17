@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect
 
 def user_login(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
+        next_url = request.POST.get('next', 'user_applications')
         username = request.POST['username']
         password = request.POST['password']
 
@@ -13,16 +14,22 @@ def user_login(request: HttpRequest) -> HttpResponse:
         try:
             user = User.objects.get(username=username)
             if not user.is_active:
-                return render(request, 'database/login.html',
-                              {'error': 'Ваша учетная запись деактивирована, обратитесь к администрации.'})
+                return render(request, 'database/login.html', {
+                    'error': 'Ваша учетная запись деактивирована, обратитесь к администрации.',
+                    'next': next_url
+                })
         except User.DoesNotExist:
             pass
 
         user = authenticate(request, username=username, password=password)
         if user is not None:
             auth_login(request, user)
-            return redirect('user_applications')
+            return redirect(next_url)
         else:
-            return render(request, 'database/login.html', {'error': 'Неправильный логин или пароль'})
+            return render(request, 'database/login.html', {
+                'error': 'Неправильный логин или пароль',
+                'next': next_url
+            })
     else:
-        return render(request, 'database/login.html')
+        next_url = request.GET.get('next', 'user_applications')
+        return render(request, 'database/login.html', {'next': next_url})

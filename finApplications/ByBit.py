@@ -1,27 +1,33 @@
 import time
 from datetime import datetime
+from pathlib import Path
 
 import requests
 import json
 import os
 
-from finApplications import settings
-
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 def save_to_json(filename, data):
     # Если файла нет, создаем его и записываем данные
+    new_data = {"average_price": data, "time": datetime.now().strftime("%Y-%m-%d %H:%M")}
+    
     if not os.path.exists(filename):
         with open(filename, 'w') as file:
-            json.dump({"average_price": data, "time": datetime.now().strftime("%Y-%m-%d %H:%M")}, file, indent=4, ensure_ascii=False)
+            json.dump(new_data, file, indent=4, ensure_ascii=False)
     else:
         # Если файл существует, обновляем содержимое
         with open(filename, 'r+') as file:
-            file_data = json.load(file)
-            file_data["average_price"] = data
-            file_data["time"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+            try:
+                file_data = json.load(file)
+            except json.JSONDecodeError:
+                # Если файл поврежден, записываем новые данные
+                file_data = {}
+            
+            file_data.update(new_data)  # Обновляем существующие данные
             file.seek(0)  # Возвращаем курсор в начало файла
+            file.truncate()  # Очищаем файл перед записью
             json.dump(file_data, file, indent=4, ensure_ascii=False)
-
 
 def get_average_price():
     url = "https://bybit-p2p-api.p.rapidapi.com/bybit/p2p/search"
@@ -69,7 +75,7 @@ def get_average_price():
 
 
 def take_bybit_price():
-    file_path = os.path.join(settings.BASE_DIR, 'finApplications', 'average_price.json')
+    file_path = os.path.join(BASE_DIR, "finApplications/average_price.json")
 
     with open(file_path, 'r') as file:
         data = json.load(file)
@@ -87,3 +93,4 @@ if __name__ == '__main__':
 
         # Ожидание 1 минуту перед следующим запросом
         time.sleep(60)
+

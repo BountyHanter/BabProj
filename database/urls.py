@@ -10,7 +10,5 @@ urlpatterns = [
     path('applications/<int:pk>/edit/', ApplicationUpdateView.as_view(), name='application-edit'),
     path('application/status/', ApplicationStatusView.as_view(), name='application_status'),
     path('banks/', BanksListAPIView.as_view(), name='banks_list_api'),
-
-
 ]
 

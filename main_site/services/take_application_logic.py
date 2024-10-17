@@ -7,7 +7,8 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect
 
-from database.models import Application, UserProfile
+from database.models.application import Application
+from database.models.user_profile import UserProfile
 from finApplications.globals import active_timers
 from main_site.tasks import cancel_application
 
@@ -61,6 +62,7 @@ def take_application(request):
     if application:
         # Обновляем заявку
         application.user_id = user_id
+        application._user = request.user
         application.taken_time = now()
         application.status = 'active'
         application.save()

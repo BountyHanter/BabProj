@@ -1,6 +1,8 @@
 # Игнорировать виртуальное окружение Python
 .venv/
+venv/
 .env
+.env_for_server
 
 # Игнорировать директории, связанные с IDE (например, PyCharm)
 .idea/
@@ -24,9 +26,6 @@ __pycache__/
 *.sqlite3
 *.db
 
-# Игнорировать файлы среды (например, environment variables)
-.env
-
 # Игнорировать сборочные артефакты
 *.egg-info/
 *.eggs/
@@ -43,3 +42,12 @@ pip-delete-this-directory.txt
 .DS_Store
 Thumbs.db
 
+/html
+
+# Файлы для сервера и дева
+finApplications/settings_for_server.py
+finApplications/settings_for_dev.py
+finApplications/settings.py
+faker1.py
+ТЗ.txt
+ТЗ_2.md

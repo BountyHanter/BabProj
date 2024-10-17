@@ -1,24 +1,25 @@
 from datetime import timedelta
 
+import requests
+from dotenv import load_dotenv
+import json
+import os
+
 from django.db.models import Sum
 from django.shortcuts import render
-from django.http import HttpResponse
-
 from django.utils import timezone
-
-from database.models import Application, WithdrawalRequest
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 
-from dotenv import load_dotenv
-
+from database.models.application import Application
+from database.models.withdrawals import WithdrawalRequest
+from finApplications import settings
 from finApplications.ByBit import take_bybit_price
+from report_service.excel_report_func import generate_excel_report
 
-import json
-import os
-from django.conf import settings  # Для работы с путями к статическим файлам
+from main_site.utils.banks_name import get_bank_names
 
 load_dotenv()
 SITE_URL = os.getenv('SITE_URL')
@@ -33,11 +34,6 @@ def user_applications_view(request):
 
     user_id = request.user.id
 
-    # Найдем активную заявку с учетом статусов 'active', 'processing', 'approved'
-    active_application = (
-        Application.objects.filter(user_id=user_id, status__in=['active', 'processing', 'approved'])
-        .first()
-    )
     # Заявки, которые не являются 'new', 'active', 'processing' или 'approved'
     other_applications = Application.objects.filter(user_id=user_id).exclude(
         status__in=['new', 'active', 'processing', 'approved']
@@ -52,49 +48,55 @@ def user_applications_view(request):
 
     other_applications = other_applications.order_by(order_by)
 
-    # Путь к файлу banks.json
-    banks_json_path = os.path.join(settings.BASE_DIR, 'main_site', 'banks.json')
-
     bybit_data = take_bybit_price()
     # Получение текущего курса и времени замера курса из профиля пользователя
     current_course = bybit_data['average_price']
-    course_taken_at = bybit_data['time']
 
     balance = profile.earnings
 
-    try:
-        # Чтение файла banks.json
-        with open(banks_json_path, 'r', encoding='utf-8') as f:
-            banks_json = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        # Обработка ошибок при чтении файла
-        banks_json = []
-        # Логирование ошибки (можно использовать logging)
-        print(f"Ошибка при чтении banks.json: {e}")
-
-    # Дополнительно: если есть активная заявка, передаем ее банк
-    bank_name = None
-    if active_application:
-        bank_name = active_application.bank_name
-
     context = {
-        'active_application': active_application,
         'other_applications': other_applications,
         'current_order_by': order_by.strip('-'),
         'current_direction': direction,
-        'banks_json': json.dumps(banks_json),
-        'bank_name': bank_name,
-        'site_url': SITE_URL,
-        'active_page': "user_applications",
         'current_course': current_course,
-        'course_taken_at': course_taken_at,
         'balance': balance,
-        'DOMAIN': DOMAIN,
     }
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return render(request, 'main_site/user_app_template.html', context)
 
     return render(request, 'main_site/user_applications.html', context)
+
+
+@csrf_protect
+@login_required
+def active_application_view(request):
+    user_id = request.user.id
+
+    # Получение активной заявки с определенными статусами
+    active_application = Application.objects.filter(
+        user_id=user_id,
+        status__in=['active', 'processing', 'approved']
+    ).first()
+
+    bybit_data = take_bybit_price()  # Предполагается, что эта функция определена
+    current_course = bybit_data['average_price']
+    course_taken_at = bybit_data['time']
+    balance = request.user.profile.earnings  # Предполагается, что у пользователя есть профиль с балансом
+
+    context = {
+        'active_application': active_application,
+        'banks_json': json.dumps(get_bank_names()),
+        'current_course': current_course,
+        'course_taken_at': course_taken_at,
+        'balance': balance,
+        'websocket_url': DOMAIN
+    }
+
+    # Проверка на AJAX-запрос
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'main_site/partials/active_application_partial.html', context)
+
+    return render(request, 'main_site/active_application.html', context)
 
 
 @login_required
@@ -107,7 +109,6 @@ def get_application_info(request):
         'type': application.type,
         'amount': application.amount,
         'payment_details': application.payment_details,
-        'bank_name': application.bank_name,
         'receipt_link': f"{SITE_URL}{application.receipt_link}" if application.receipt_link else None,
     }
     return JsonResponse(data)
@@ -176,21 +177,45 @@ def personal_cabinet(request):
 
     return render(request, 'main_site/personal_cabinet.html', context)
 
-def custom_404(request, exception):
-    try:
-        with open('/var/www/babdata.cloud/html/404.html', 'r', encoding='utf-8') as f:
-            return HttpResponse(f.read(), status=404)
-    except Exception as e:
-        # В случае ошибки чтения файла, вернуть простой ответ
-        return HttpResponse("Страница не найдена", status=404)
 
-def custom_500(request):
-    try:
-        with open('/var/www/babdata.cloud/html/500.html', 'r', encoding='utf-8') as f:
-            return HttpResponse(f.read(), status=500)
-    except Exception as e:
-        # В случае ошибки чтения файла, вернуть простой ответ
-        return HttpResponse("Внутренняя ошибка сервера", status=500)
+@csrf_protect
+@login_required
+def generate_report(request):
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # Получаем данные из запроса
+        data = json.loads(request.body.decode('utf-8'))
+
+        # Печатаем данные в консоль для отладки
+        result_link = generate_excel_report(request, data)
+        # Возвращаем ответ об успешной обработке
+        return JsonResponse({'file_url': result_link}, status=200)
+    else:
+        can_view_all_reports = request.user.is_superuser or request.user.has_perm('main_site.can_view_all_reports')
+        context = {
+            'banks_json': json.dumps(get_bank_names()),
+            'can_view_all_reports': can_view_all_reports,
+
+        }
+        return render(request, 'main_site/generate_report.html', context)
+
+
+@login_required
+def protected_media(request, path):
+    # Путь к локальному файлу
+    media_path = os.path.join(settings.MEDIA_ROOT, path)
+
+    # Проверяем, есть ли файл на локальном сервере
+    if os.path.exists(media_path):
+        return FileResponse(open(media_path, 'rb'))
+
+    # Если файл отсутствует на локальном сервере, запрашиваем его на удалённом
+    media_url = f'http://147.45.245.11/media/{path}'
+    response = requests.get(media_url)
+
+    if response.status_code == 200:
+        return HttpResponse(response.content, content_type=response.headers['Content-Type'])
+    else:
+        raise Http404("Файл не найден.")
 
 
 # @csrf_exempt  # Отключаем проверку CSRF для POST-запросов
@@ -230,9 +255,4 @@ def custom_500(request):
 #             return JsonResponse({"status": "error", "message": f"Error: {str(e)}"}, status=400)
 #     return JsonResponse({"status": "error", "message": "Only POST requests allowed"}, status=405)
 
-from django.http import HttpResponse
 
-def trigger_error(request):
-    # Искусственно вызываем ошибку
-    division_by_zero = 1 / 0
-    return HttpResponse("This won't be reached.")
