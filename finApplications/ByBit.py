@@ -36,12 +36,12 @@ def get_average_price():
         "tokenId": "USDT",
         "currencyId": "RUB",
         "payment": ["582"],
-        "side": "0",
+        "side": "1",
         "size": "5",
         "page": "1",
-        "amount": "100001",
+        "amount": "100000",
         "authMaker": True,
-        "canTrade": True
+        "canTrade": False
     }
 
     headers = {
@@ -66,9 +66,11 @@ def get_average_price():
         prices = [float(item['price']) for item in items]
 
         # Суммируем цены и делим на количество элементов для вычисления среднего значения
-        average_price = sum(prices) / len(prices)
+        target_price = prices[1]
 
-        save_to_json('average_price.json', round(average_price, 3))
+        print(target_price)
+
+        save_to_json('average_price.json', round(target_price, 3))
 
     else:
         print(f"Ошибка: {response.status_code}")
@@ -93,4 +95,5 @@ if __name__ == '__main__':
 
         # Ожидание 1 минуту перед следующим запросом
         time.sleep(60)
+
 

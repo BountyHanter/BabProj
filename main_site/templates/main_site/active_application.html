@@ -363,7 +363,7 @@
         const confirmApplicationsUrl = "{% url 'confirm_application' %}";
         const activeApplication = "{{ active_application }}";
         const reportProblemUrl = "{% url 'report_problem' %}";
-        const socketDomain = new WebSocket('ws://{{ websocket_url }}/ws/update/');
+        const socketDomain = new WebSocket('wss://{{ websocket_url }}/ws/update/');
 
     </script>
     <script src="{% static 'websocket.js' %}"></script>

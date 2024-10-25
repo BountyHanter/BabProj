@@ -209,7 +209,7 @@ def protected_media(request, path):
         return FileResponse(open(media_path, 'rb'))
 
     # Если файл отсутствует на локальном сервере, запрашиваем его на удалённом
-    media_url = f'http://147.45.245.11/media/{path}'
+    media_url = f'https://media.babdata.cloud/media/{path}'
     response = requests.get(media_url)
 
     if response.status_code == 200:

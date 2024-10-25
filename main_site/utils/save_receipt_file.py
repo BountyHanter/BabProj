@@ -11,7 +11,7 @@ from main_site.utils.get_banks import get_bank_name_by_index
 from main_site.utils.telegram_api import send_application_data
 
 load_dotenv()
-MEDIA_SERVER_URL = 'http://147.45.245.11/upload/'  # URL для загрузки файла на удалённый сервер
+MEDIA_SERVER_URL = 'https://media.babdata.cloud/upload/'  # URL для загрузки файла на удалённый сервер
 
 
 @csrf_protect
@@ -58,6 +58,7 @@ def upload_receipt(request):
             # Получаем URL загруженного файла и сохраняем только относительный путь
             file_url = response.json().get('file_url')
             relative_file_url = file_url.replace('http://147.45.245.11', '')
+            
 
             # Обновляем данные заявки
             application.has_receipt = True

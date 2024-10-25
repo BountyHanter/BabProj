@@ -25,9 +25,9 @@ from database.views.auth_views import user_login
 from database.views.web_views import merchant_dashboard
 
 urlpatterns = [
-    #path('Yay2tieW/', admin.site.urls),
+    path('Yay2tieW/', admin.site.urls),
 
-    path('admin/', admin.site.urls),
+    #path('admin/', admin.site.urls),
     path('api/', include('database.urls')),
     path('', include('main_site.urls')),
 

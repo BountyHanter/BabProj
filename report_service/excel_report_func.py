@@ -32,9 +32,8 @@ def generate_excel_report(request, filter_data):
     ws.title = "Отчёт"
 
     # Определяем, есть ли у пользователя право просматривать все отчёты или он в группе 'Merchant'
-    can_view_all = request.user.has_perm('report.can_view_all_reports') or request.user.groups.filter(
-        name='Merchant').exists()
-    is_merchant = request.user.groups.filter(name='Merchant').exists()
+    can_view_all = request.user.has_perm('report.can_view_all_reports')
+    is_merchant = request.user.groups.filter(name='Merchants').exists()
 
     # Формируем заголовки в зависимости от прав
     headers = ['ID заявки']
@@ -47,6 +46,21 @@ def generate_excel_report(request, filter_data):
 
     # Фильтрация заявок
     applications = Application.objects.all()
+
+    # Если пользователь имеет право на просмотр всех отчётов
+    if can_view_all:
+        # Применяются только фильтры, не касающиеся пользователей (например, по заявкам, банкам и т.д.)
+        pass  # Уже применены другие фильтры выше (по датам, банкам и т.д.)
+
+    # Если пользователь в группе "Merchants"
+    elif is_merchant:
+        # Скрытая фильтрация по его merchant_id
+        applications = applications.filter(merchant_id=request.user.id)
+
+    # Если пользователь не имеет прав и не состоит в группе "Merchants"
+    else:
+        # Скрытая фильтрация по его user_id
+        applications = applications.filter(user_id=request.user.id)
 
     # Применяем фильтры по id заявок
     if filter_data.get('application_id_from'):
@@ -75,19 +89,6 @@ def generate_excel_report(request, filter_data):
         applications = applications.filter(amount__gte=filter_data['amount_from'])
     if filter_data.get('amount_to'):
         applications = applications.filter(amount__lte=filter_data['amount_to'])
-
-    # Фильтрация по merchant_ids и user_ids
-    if can_view_all:
-        if filter_data.get('merchant_ids'):
-            merchant_ids = filter_data['merchant_ids'].split(',')
-            applications = applications.filter(merchant_id__in=merchant_ids)
-        if filter_data.get('user_ids'):
-            user_ids = filter_data['user_ids'].split(',')
-            applications = applications.filter(user_id__in=user_ids)
-    elif is_merchant:
-        applications = applications.filter(merchant_id=request.user.id)
-    else:
-        applications = applications.filter(user_id=request.user.id)
 
     # Фильтрация по датам создания и завершения
     if filter_data.get('creation_date_from'):
@@ -148,4 +149,5 @@ def generate_excel_report(request, filter_data):
     response['Content-Disposition'] = f'attachment; filename={report_name}'
 
     return f'{SITE_URL}{report_link}'
+
 
