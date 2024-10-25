@@ -11,12 +11,30 @@ class UserProfile(models.Model):
         default=1.0,
         verbose_name='Процент начисления'
     )
+    merchant_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=1.0,
+        verbose_name='Процент списания у мерчанта'
+    )
     earnings = models.DecimalField(
         max_digits=15,
         decimal_places=2,
         default=0.0,
         validators=[MinValueValidator(0)],
         verbose_name='Заработок'
+    )
+    merchant_balance = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0.0,
+        verbose_name='Баланс мерчанта'
+    )
+    merchant_limit = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=0.0,
+        verbose_name='Лимит мерчанта'
     )
     min_amount = models.DecimalField(
         max_digits=15,

@@ -10,7 +10,9 @@ from database.models.api_keys import APIKey
 class CustomUserAdmin(UserAdmin):
     inlines = (APIKeyInline, UserProfileInline,)  # Добавляем UserProfileInline
 
-    list_display = ('username', 'get_groups') + UserAdmin.list_display[1:] + ('get_percentage', 'get_earnings',)
+    list_display = (
+        'username', 'get_groups'
+    ) + UserAdmin.list_display[1:] + ('get_percentage', 'get_earnings',)
     list_select_related = ('profile',)  # Оптимизирует запросы для связанных моделей
 
     def get_groups(self, obj):
@@ -29,6 +31,18 @@ class CustomUserAdmin(UserAdmin):
 
     get_earnings.short_description = 'Заработок'
     get_earnings.admin_order_field = 'profile__earnings'
+
+    def get_merchant_balance(self, obj):
+        return obj.profile.merchant_balance
+
+    get_merchant_balance.short_description = 'Баланс мерчанта'
+    get_merchant_balance.admin_order_field = 'profile__merchant_balance'
+
+    def get_merchant_limit(self, obj):
+        return obj.profile.merchant_limit
+
+    get_merchant_limit.short_description = 'Лимит мерчанта'
+    get_merchant_limit.admin_order_field = 'profile__merchant_limit'
 
     def save_model(self, request, obj, form, change):
         # Сначала сохраняем объект пользователя
