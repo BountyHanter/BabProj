@@ -20,7 +20,8 @@ def upload_receipt(request):
         try:
             # Получаем ID заявки
             application_id = request.POST.get('application_id')
-            application = get_object_or_404(Application, id=application_id, user_id=request.user.id)
+            application = get_object_or_404(Application, id=application_id, executor=request.user
+                                            )
 
             # Проверяем статус заявки
             if application.status != 'active':

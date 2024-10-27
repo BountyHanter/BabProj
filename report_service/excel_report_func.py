@@ -39,7 +39,7 @@ def generate_excel_report(request, filter_data):
     headers = ['ID заявки']
     if can_view_all:
         headers.append('Дата создания')
-    headers.extend(['Дата исполнения', 'Тип заявки', 'Реквизиты', 'User', 'Сумма', 'Валюта',
+    headers.extend(['Дата исполнения', 'Тип заявки', 'Реквизиты', 'Исполнитель', 'Сумма', 'Валюта',
                     'Статус', 'Банк получателя', 'Банк исполнителя', 'Курс на момент исполнения',
                     'Курс после вычета комиссии', 'Комиссия в %', 'Сумма в USDT', 'Ссылка на чек'])
     ws.append(headers)
@@ -55,12 +55,12 @@ def generate_excel_report(request, filter_data):
     # Если пользователь в группе "Merchants"
     elif is_merchant:
         # Скрытая фильтрация по его merchant_id
-        applications = applications.filter(merchant_id=request.user.id)
+        applications = applications.filter(merchant=request.user)
 
     # Если пользователь не имеет прав и не состоит в группе "Merchants"
     else:
-        # Скрытая фильтрация по его user_id
-        applications = applications.filter(user_id=request.user.id)
+        # Скрытая фильтрация по его id
+        applications = applications.filter(executor=request.user.id)
 
     # Применяем фильтры по id заявок
     if filter_data.get('application_id_from'):
@@ -101,7 +101,7 @@ def generate_excel_report(request, filter_data):
         applications = applications.filter(completed_time__lte=filter_data['completion_date_to'])
 
     for app in applications:
-        user_name = app._user.username if app._user else 'N/A'
+        user_name = app.executor.username if app.executor else 'N/A'
         row = [app.id]
         if can_view_all:
             created_at = app.created_at.strftime('%Y-%m-%d %H:%M') if app.created_at else 'N/A'

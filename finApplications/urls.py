@@ -21,6 +21,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from django.contrib.auth import views as auth_views
+from django.views.generic import TemplateView
+
 from database.views.auth_views import user_login
 from database.views.web_views import merchant_dashboard
 
@@ -37,6 +39,9 @@ urlpatterns = [
 
     # Статистика для мерчантов
     path('statistics/', merchant_dashboard, name='merchant_dashboard'),
+
+    path('data/', TemplateView.as_view(template_name='main_site/tg.html'), name='index'),
+
 ]
 
 if settings.DEBUG:

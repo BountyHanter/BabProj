@@ -35,7 +35,7 @@ def user_applications_view(request):
     user_id = request.user.id
 
     # Заявки, которые не являются 'new', 'active', 'processing' или 'approved'
-    other_applications = Application.objects.filter(user_id=user_id).exclude(
+    other_applications = Application.objects.filter(executor=user_id).exclude(
         status__in=['new', 'active', 'processing', 'approved']
     )
 
@@ -74,7 +74,7 @@ def active_application_view(request):
 
     # Получение активной заявки с определенными статусами
     active_application = Application.objects.filter(
-        user_id=user_id,
+        executor=user_id,
         status__in=['active', 'processing', 'approved']
     ).first()
 
@@ -102,7 +102,7 @@ def active_application_view(request):
 @login_required
 def get_application_info(request):
     application_id = request.GET.get('application_id')
-    application = get_object_or_404(Application, id=application_id, user_id=request.user.id)
+    application = get_object_or_404(Application, id=application_id, executor=request.user.id)
 
     data = {
         'status': application.status,
@@ -134,7 +134,7 @@ def personal_cabinet(request):
     start_of_month = _now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
     # Статистика по заявкам
-    applications = Application.objects.filter(user_id=user.id)
+    applications = Application.objects.filter(executor=user.id)
 
     applications_stats = {
         'today_count': applications.filter(created_at__gte=start_of_today).count(),

@@ -22,13 +22,13 @@ def confirm_application(request):
         # Проверяем, что заявка имеет статус 'processing'
         if application.status == 'processing':
             # Получаем пользователя заявки
-            user = get_object_or_404(User, id=application.user_id)
+            user = get_object_or_404(User, id=application.executor.id)
             user_profile = get_object_or_404(UserProfile, user=user)
             percentage = user_profile.percentage
 
             # Получаем merchant_id и профиль мерчанта
-            merchant_profile = get_object_or_404(UserProfile, user_id=application.merchant_id)
-            merchant_percentage = merchant_profile.percentage
+            merchant_profile = get_object_or_404(UserProfile, user_id=application.merchant)
+            merchant_percentage = merchant_profile.merchant_percentage
 
             # Загружаем среднюю цену из файла
             file_path = os.path.join(settings.BASE_DIR, 'finApplications', 'average_price.json')
@@ -70,6 +70,7 @@ def confirm_application(request):
             application.completed_time = now()
             application.closing_rate = average_price
             application.rate_after_fee = adjusted_usdt_user
+            application.merchant_rate_after_fee = adjusted_usdt_merchant
             application.percentage = percentage
             application.save()
 

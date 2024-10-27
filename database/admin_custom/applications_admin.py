@@ -17,10 +17,10 @@ load_dotenv()
 
 
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'type', 'status', 'amount', 'formatted_created_at', 'formatted_completed_time', 'merchant_id',
-                    '_user')
+    list_display = ('id', 'type', 'status', 'amount', 'formatted_created_at', 'formatted_completed_time', 'merchant',
+                    'executor')
     list_filter = ('status', 'type', 'created_at', 'completed_time')
-    search_fields = ('from_bank', 'to_bank', 'merchant_id')
+    search_fields = ('from_bank', 'to_bank', 'merchant')
     sortable_by = ['created_at', 'completed_time', 'amount']
     ordering = ['-created_at']
     readonly_fields = ('clickable_receipt_link', )
@@ -87,7 +87,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         }
 
         # Статистика по мерчантам
-        merchants = Application.objects.values('merchant_id').annotate(
+        merchants = Application.objects.values('merchant').annotate(
             total_count=Count('id'),
             total_sum=Sum('amount')
         ).order_by('-total_count')

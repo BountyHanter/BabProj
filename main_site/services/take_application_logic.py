@@ -33,7 +33,7 @@ def take_application(request):
 
     user_id = user.id
 
-    active_application = Application.objects.select_for_update().filter(user_id=user_id, status='active').first()
+    active_application = Application.objects.select_for_update().filter(executor=user_id, status='active').first()
     if active_application:
         return JsonResponse({"error": "У вас уже есть активная заявка"}, status=400)
 
@@ -52,7 +52,7 @@ def take_application(request):
     # Находим ID мерчантов с балансом ниже лимита
     merchants_below_limit = UserProfile.objects.filter(
         merchant_balance__lt=F('merchant_limit')
-    ).values('user_id')
+    ).values('user')
 
     # Ищем подходящую заявку, исключая заявки от мерчантов с низким балансом
     application = (Application.objects
@@ -64,8 +64,7 @@ def take_application(request):
                    .first())
 
     if application:
-        application.user_id = user_id
-        application._user = request.user
+        application.executor = request.user
         application.taken_time = now()
         application.status = 'active'
         application.save()

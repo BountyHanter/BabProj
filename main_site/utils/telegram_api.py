@@ -16,8 +16,8 @@ def send_application_data(application_id):
     # Шаг 1: Получаем объект Application по ID
     application = get_object_or_404(Application, id=application_id)
 
-    # Шаг 2: Извлекаем user_id, receipt_link и дополнительные данные
-    user_id = application.user_id
+    # Шаг 2: Извлекаем данные из заявки
+    user_id = application.executor.id
     receipt_link = application.receipt_link
     amount = application.amount
     from_bank = application.from_bank
@@ -66,7 +66,7 @@ def send_problem_data(application_id):
     application = get_object_or_404(Application, id=application_id)
 
     # Шаг 2: Извлекаем user_id и problem
-    user_id = application.user_id
+    user_id = application.executor.id  # Извлекаем ID пользователя из объекта User
     problem = application.problem
 
     # Шаг 3: Ищем пользователя по user_id в таблице auth_user

@@ -10,7 +10,7 @@ def merchant_dashboard(request):
     current_user = request.user
 
     # Получаем заявки, связанные с этим мерчантом
-    applications = Application.objects.filter(merchant_id=current_user.id)
+    applications = Application.objects.filter(merchant=current_user.id)
 
     # Фильтрация по статусу
     status = request.GET.get('status')

@@ -9,7 +9,7 @@ def cancel_application(application_id):
         application = Application.objects.get(id=application_id)
         if application.status in VALID_STATUSES:
             application.status = 'new'
-            application.user_id = None
+            application.executor = None
             application.save()
             # Удаляем таймер из словаря после отмены
             if application_id in active_timers:

@@ -6,7 +6,7 @@ from django.db import models
 
 
 class APIKey(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, db_column='user_id')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, db_column='')
 
     # Публичный клиентский идентификатор (например, UUID)
     client_id = models.CharField(max_length=36, unique=True, default=uuid.uuid4)

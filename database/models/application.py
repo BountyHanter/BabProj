@@ -47,30 +47,79 @@ class Application(models.Model):
         ('sbp', 'SBP')
     ]
 
-    type = models.CharField(max_length=4, choices=TYPE_CHOICES, verbose_name='Тип')
-    payment_details = models.CharField(max_length=255, verbose_name='Реквизиты')
-    to_bank = models.CharField(verbose_name='Банк клиента для перевода')
-    from_bank = models.CharField(null=True, blank=True, max_length=255, verbose_name='Банк отправителя средств')
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='new', verbose_name='Статус')
-    amount = models.DecimalField(max_digits=15, decimal_places=2, verbose_name='Сумма (в руб.)')
-    net_amount_in_usdt = models.DecimalField(max_digits=15, decimal_places=2, verbose_name='Сумма начисленная юзеру',
-                                             null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
-    taken_time = models.DateTimeField(null=True, blank=True, verbose_name='Время взятия')
-    completed_time = models.DateTimeField(null=True, blank=True, verbose_name='Время завершения')
-    receipt_link = models.CharField(max_length=255, null=True, blank=True, verbose_name='Ссылка на чек')
-    merchant_id = models.IntegerField(verbose_name='ID Мерчанта')
-    user_id = models.IntegerField(verbose_name='ID Юзера', null=True, blank=True)
-    _user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications', verbose_name='Юзер',
-                              null=True, blank=True)
-    problem = models.CharField(max_length=255, verbose_name='Проблема', null=True, blank=True)
-    note = models.CharField(max_length=255, verbose_name='Заметка', null=True, blank=True)
-    closing_rate = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Курс на момент исполнения заявки',
-                                       null=True, blank=True)
-    rate_after_fee = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Курс за вычетом комиссии',
-                                         null=True, blank=True)
-    percentage = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='Процент начисления', null=True,
-                                     blank=True)
+    # Основная информация о заявке
+    type = models.CharField(
+        max_length=4, choices=TYPE_CHOICES, verbose_name='Тип'
+    )
+    status = models.CharField(
+        max_length=10, choices=STATUS_CHOICES, default='new', verbose_name='Статус'
+    )
+    amount = models.DecimalField(
+        max_digits=15, decimal_places=2, verbose_name='Сумма (в руб.)'
+    )
+    net_amount_in_usdt = models.DecimalField(
+        max_digits=15, decimal_places=2, verbose_name='Сумма начисленная юзеру',
+        null=True, blank=True
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name='Время создания'
+    )
+    taken_time = models.DateTimeField(
+        null=True, blank=True, verbose_name='Время взятия'
+    )
+    completed_time = models.DateTimeField(
+        null=True, blank=True, verbose_name='Время завершения'
+    )
+
+    # Информация о банках и реквизитах
+    payment_details = models.CharField(
+        max_length=255, verbose_name='Реквизиты'
+    )
+    to_bank = models.CharField(
+        verbose_name='Банк клиента для перевода'
+    )
+    from_bank = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name='Банк отправителя средств'
+    )
+
+    # Ссылки и заметки
+    receipt_link = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name='Ссылка на чек'
+    )
+    problem = models.CharField(
+        max_length=255, verbose_name='Проблема', null=True, blank=True
+    )
+    note = models.CharField(
+        max_length=255, verbose_name='Заметка', null=True, blank=True
+    )
+
+    # Информация о исполнителе и мерчанте
+    executor = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='executor_applications',
+        verbose_name='Исполнитель', null=True, blank=True
+    )
+    merchant = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='merchant_applications',
+        verbose_name='Мерчант', null=True, blank=True
+    )
+
+    # Курсы и проценты
+    closing_rate = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name='Курс на момент исполнения заявки',
+        null=True, blank=True
+    )
+    rate_after_fee = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name='Курс за вычетом комиссии для команд',
+        null=True, blank=True
+    )
+    merchant_rate_after_fee = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name='Курс за вычетом комиссии для мерчанта',
+        null=True, blank=True
+    )
+    percentage = models.DecimalField(
+        max_digits=5, decimal_places=2, verbose_name='Процент начисления',
+        null=True, blank=True
+    )
 
     objects = ApplicationManager()
 
@@ -100,8 +149,8 @@ class Application(models.Model):
             fields_to_check = [
                 'type', 'payment_details', 'to_bank', 'from_bank', 'status',
                 'amount', 'net_amount_in_usdt', 'created_at', 'taken_time',
-                'completed_time', 'receipt_link', 'merchant_id', 'user_id',
-                '_user', 'problem', 'note'
+                'completed_time', 'receipt_link', 'merchant', 'executor',
+                'problem', 'note'
             ]
 
             for field in fields_to_check:
@@ -112,10 +161,6 @@ class Application(models.Model):
                         'old': old_value_field,
                         'new': new_value_field
                     }
-
-        # Обновляем user_id, если изменилось поле _user
-        if self._user:
-            self.user_id = self._user.id
 
         # Устанавливаем время завершения, если статус изменяется на 'completed' или 'canceled'
         if self.status in ['completed', 'canceled']:

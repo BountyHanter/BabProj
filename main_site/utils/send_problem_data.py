@@ -19,7 +19,7 @@ def report_problem(request):
                 return JsonResponse({"error": "Описание проблемы обязательно"}, status=400)
 
             # Находим заявку
-            application = get_object_or_404(Application, id=application_id, user_id=request.user.id)
+            application = get_object_or_404(Application, id=int(application_id), executor=request.user)
 
             # Меняем статус заявки на 'manual' и записываем проблему
             application.status = 'manual'

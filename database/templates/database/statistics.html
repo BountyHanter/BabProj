@@ -200,8 +200,8 @@
                 <td>{% if application.taken_time %}{{ application.taken_time|date:"d.m.Y H:i" }}{% else %}N/A{% endif %}</td>
                 <td>{% if application.completed_time %}{{ application.completed_time|date:"d.m.Y H:i" }}{% else %}N/A{% endif %}</td>
                 <td>{% if application.receipt_link %}<a href="{{ application.receipt_link }}" target="_blank">Ссылка</a>{% else %}N/A{% endif %}</td>
-                <td>{{ application.merchant_id }}</td>
-                <td>{{ application.user_id }}</td>
+                <td>{{ application.merchant }}</td>
+                <td>{{ application.executor }}</td>
             </tr>
             {% empty %}
             <tr>

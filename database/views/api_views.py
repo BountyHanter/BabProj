@@ -36,8 +36,8 @@ class ApplicationCreateView(APIView):
         for index, application_data in enumerate(request.data):
             serializer = ApplicationSerializer(data=application_data)
             if serializer.is_valid():
-                # Добавляем merchant_id из найденного APIKey
-                application = serializer.save(merchant_id=api_key_obj.user.id)
+                # Добавляем merchant из найденного APIKey
+                application = serializer.save(merchant=api_key_obj.user)
                 created_applications.append({
                     "status": "created",
                     "id": application.id
@@ -87,7 +87,7 @@ class ApplicationUpdateView(APIView):
             )
 
         # Проверка принадлежности заявки мерчанту
-        if application.merchant_id != api_key_obj.user.id:
+        if application.merchant != api_key_obj.user:
             return Response(
                 {
                     "status": "error",

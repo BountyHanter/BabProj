@@ -8,11 +8,9 @@ from database.models.application import Application
 
 @receiver(post_save, sender=Application)
 def application_saved(sender, instance, **kwargs):
-    if instance.user_id:
-        print(f"Срабатывает сигнал для пользователя {instance.user_id} с заявкой {instance.id}")
-        send_update_to_user(instance.user_id, instance.id, action='update')
-    else:
-        print("user_id не найден для данной заявки")
+    if instance.executor:
+        print(f"Срабатывает сигнал для пользователя {instance.executor} с заявкой {instance.id}")
+        send_update_to_user(instance.executor, instance.id, action='update')
 
 
 def send_update_to_user(user_id, application_id, action='update'):

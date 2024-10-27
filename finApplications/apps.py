@@ -5,4 +5,5 @@ class FinApplicationsConfig(AppConfig):
     name = 'finApplications'
 
     def ready(self):
-        import finApplications.signals  # Подключение
+        print("Метод ready() вызван в FinApplicationsConfig")
+        import finApplications.signals
