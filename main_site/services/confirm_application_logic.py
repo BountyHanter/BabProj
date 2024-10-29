@@ -10,6 +10,7 @@ from database.models.application import Application
 from database.models.user_profile import UserProfile
 from django.contrib.auth.models import User
 from finApplications.globals import active_timers
+from main_site.services.telegram_notification import telegram_balance_warning
 
 
 def confirm_application(request):
@@ -58,6 +59,10 @@ def confirm_application(request):
 
             # Списываем с баланса мерчанта
             merchant_profile.merchant_balance -= merchant_deduction
+            if merchant_profile.merchant_balance <= 500:
+                telegram_balance_warning(merchant_profile.user.username)
+            elif merchant_profile.merchant_balance < 0:
+                telegram_balance_warning(merchant_profile.user.username, True)
             merchant_profile.save()
 
             # Удаляем активный таймер, если он есть
