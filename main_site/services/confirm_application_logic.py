@@ -59,10 +59,10 @@ def confirm_application(request):
 
             # Списываем с баланса мерчанта
             merchant_profile.merchant_balance -= merchant_deduction
-            # if merchant_profile.merchant_balance <= 500:
-            #     telegram_balance_warning(merchant_profile.user.username)
-            # elif merchant_profile.merchant_balance < 0:
-            #     telegram_balance_warning(merchant_profile.user.username, True)
+            if merchant_profile.merchant_balance <= 500:
+                telegram_balance_warning(merchant_profile.user.username)
+            elif merchant_profile.merchant_balance < 0:
+                telegram_balance_warning(merchant_profile.user.username, True)
             merchant_profile.save()
 
             # Удаляем активный таймер, если он есть

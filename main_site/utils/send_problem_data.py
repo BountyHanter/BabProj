@@ -29,9 +29,9 @@ def report_problem(request):
             application.save()
 
             # Отправляем данные через send_application_data
-            # result, error = send_problem_data(application_id)
-            # if error:
-            #     return JsonResponse({"error": error}, status=400)
+            result, error = send_problem_data(application_id)
+            if error:
+                return JsonResponse({"error": error}, status=400)
 
             # Возвращаем успешный ответ
             return JsonResponse({

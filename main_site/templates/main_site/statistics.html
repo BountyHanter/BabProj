@@ -8,6 +8,16 @@
         <meta name="description" content="">
         <meta name="keywords" content="">
 
+        <style>
+.pagin ul li a {
+    cursor: pointer;
+}
+
+.pagin ul li.active a {
+    cursor: default; /* Для текущей страницы можно оставить стандартный курсор */
+}
+        </style>
+
         <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
     </head>
     <body class="page_history_applications m_history">

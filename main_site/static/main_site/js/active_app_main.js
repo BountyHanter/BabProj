@@ -49,7 +49,7 @@ $(document).ready(function() {
                 // Обновляем содержимое контейнера с активной заявкой
                 $('#application-container').html(response);
                 console.log(message, type)
-                // showMessage(message, type);
+                showMessage(message, type);
                 // Повторно запускаем таймер после обновления содержимого
                 initTimer();
                 initUploadFeature();

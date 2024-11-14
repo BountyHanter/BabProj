@@ -80,22 +80,27 @@ function initUploadFeature() {
                 return response.json();
             } else {
                 return response.json().then(errData => {
-                    showMessage(errData.error || "Ошибка при загрузке файла", 'error');
-                    throw new Error(errData.error || "Ошибка при загрузке файла");
+                    const errorMsg = errData.errors ? errData.errors.join(' ') : (errData.error || "Ошибка при загрузке файла");
+                    showMessage(errorMsg, 'error');
+                    throw new Error(errorMsg);
                 });
             }
         })
         .then(data => {
             if (data.status === "success") {
                 console.log('Успешно загружено');
-                showMessage('Файл успешно загружен', "success");
+                if (data.error) {
+                    showMessage('Файл успешно загружен, НО возникла проблема с уведомлением в Telegram: ' + data.error, "success");
+                } else {
+                    showMessage('Файл успешно загружен', "success");
+                }
             } else {
                 showMessage(data.error || "Ошибка при загрузке файла", 'error');
             }
         })
         .catch(error => {
             console.error("Ошибка:", error);
-            showMessage(error, 'error')
+            showMessage(error.message, 'error');
         });
     });
 }

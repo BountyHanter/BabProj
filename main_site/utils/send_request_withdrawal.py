@@ -45,9 +45,9 @@ def request_withdrawal(request):
         profile.earnings -= amount
         profile.save()
 
-        # result, error = send_request_withdrawal(float(amount), float(available_amount), username)
-        # if error:
-        #     return JsonResponse({"error": error}, status=400)
+        result, error = send_request_withdrawal(float(amount), float(available_amount), username)
+        if error:
+            return JsonResponse({"error": error}, status=400)
 
         return JsonResponse({'success': True, 'message': 'Запрос на вывод средств успешно создан.'})
     else:

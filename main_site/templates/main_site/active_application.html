@@ -169,11 +169,11 @@
             const activeApplication = "{{ active_application }}";
             const reportProblemUrl = "{% url 'report_problem' %}";
             const uploadReceiptUrl = "{% url 'upload_receipt' %}";
-            const socketDomain = new WebSocket('ws://{{ websocket_url }}/ws/update/');
+            const socketDomain = new WebSocket('wss://{{ websocket_url }}/ws/update/');
 
         </script>
-        <script src="{% static 'main_site/js/websocket.js' %}"></script>
         <script src="{% static 'main_site/js/take_application.js' %}"></script>
+        <script src="{% static 'main_site/js/websocket.js' %}"></script>
         <script src="{% static 'main_site/js/show_notification.js' %}"></script>
         <script src="{% static 'main_site/js/timer.js' %}"></script>
         <script src="{% static 'main_site/js/upload_receipt.js' %}"></script>

@@ -55,57 +55,58 @@ def upload_receipt(request):
                 return JsonResponse({"error": "Недопустимый формат файла. Разрешены только PDF и изображения (JPEG, PNG)."}, status=400)
 
             # Генерируем уникальное имя файла
-            unique_filename = generate_unique_filename(receipt_file.name)
-
-            fs = FileSystemStorage()
-            filename = fs.save(f"receipts/{unique_filename}", receipt_file)
-            file_url = fs.url(filename)
-
-            # Сохраняем относительный путь в application.receipt_link
-            application.has_receipt = True
-            application.receipt_link = file_url
-            application.from_bank = bank_name
-            application.status = 'processing'
-
             # unique_filename = generate_unique_filename(receipt_file.name)
             #
-            # # Отправляем файл на удалённый сервер
-            # files = {
-            #     'receipt': (unique_filename, receipt_file.read(), receipt_file.content_type)
-            # }
-            # response = requests.post(MEDIA_SERVER_URL, files=files)
+            # fs = FileSystemStorage()
+            # filename = fs.save(f"receipts/{unique_filename}", receipt_file)
+            # file_url = fs.url(filename)
             #
-            # if response.status_code != 200:
-            #     return JsonResponse({"error": "Ошибка загрузки файла на удалённый сервер"}, status=500)
-            #
-            # # Получаем URL загруженного файла и сохраняем только относительный путь
-            # file_url = response.json().get('file_url')
-            # relative_file_url = file_url.replace('http://147.45.245.11', '')
-            #
-            #
-            # # Обновляем данные заявки
+            # # Сохраняем относительный путь в application.receipt_link
             # application.has_receipt = True
-            # application.receipt_link = relative_file_url  # Сохраняем относительный путь
+            # application.receipt_link = file_url
             # application.from_bank = bank_name
             # application.status = 'processing'
+            # # Возвращаем успешный ответ
             # application.save()
+
+            unique_filename = generate_unique_filename(receipt_file.name)
+
+            # Отправляем файл на удалённый сервер
+            files = {
+                'receipt': (unique_filename, receipt_file.read(), receipt_file.content_type)
+            }
+            response = requests.post(MEDIA_SERVER_URL, files=files)
+
+            if response.status_code != 200:
+                return JsonResponse({"error": "Ошибка загрузки файла на удалённый сервер"}, status=500)
+
+            # Получаем URL загруженного файла и сохраняем только относительный путь
+            file_url = response.json().get('file_url')
+            relative_file_url = file_url.replace('http://147.45.245.11', '')
+
+            # Обновляем данные заявки
+            application.has_receipt = True
+            application.receipt_link = relative_file_url  # Сохраняем относительный путь
+            application.from_bank = bank_name
+            application.status = 'processing'
+            application.save()
 
             # Отправляем данные через send_application_data
             result, error = send_application_data(application_id)
 
+            # Если есть ошибка, но мы хотим вернуть статус "success" вместе с ошибкой
             if error:
-                return JsonResponse({"error": error}, status=400)
+                return JsonResponse({
+                    "status": "success",
+                    "error": error
+                })
 
-            # Возвращаем успешный ответ
-            time.sleep(5)
-            application.save()
-            return JsonResponse({
-                "status": "success",
-            })
+            return JsonResponse({"status": "success"})
 
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
+            # Если произошла необработанная ошибка, возвращаем статус "success" и саму ошибку
+            return JsonResponse({"status": "success", "error": str(e)})
 
-    return JsonResponse({"error": "Неподдерживаемый метод"}, status=405)
+    return JsonResponse({"status": "error", "error": "Неподдерживаемый метод"}, status=405)
 
 
