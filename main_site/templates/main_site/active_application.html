@@ -7,6 +7,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="">
         <meta name="keywords" content="">
+        <link rel="icon" type="image/x-icon" href="{% static 'favicon.png' %}">
         <style>
 .modal_send_check {
     display: none; /* По умолчанию скрыто */
@@ -169,7 +170,7 @@
             const activeApplication = "{{ active_application }}";
             const reportProblemUrl = "{% url 'report_problem' %}";
             const uploadReceiptUrl = "{% url 'upload_receipt' %}";
-            const socketDomain = new WebSocket('wss://{{ websocket_url }}/ws/update/');
+            const socketDomain = new WebSocket('ws://{{ websocket_url }}/ws/update/');
 
         </script>
         <script src="{% static 'main_site/js/take_application.js' %}"></script>
