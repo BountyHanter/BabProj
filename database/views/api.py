@@ -149,7 +149,7 @@ class BanksListAPIView(APIView):
             return error_response
 
         # Путь к файлу banks.json
-        file_path = os.path.join(settings.BASE_DIR, 'main_site', 'banks.json')
+        file_path = os.path.join(settings.BASE_DIR, 'database', 'banks.json')
 
         # Чтение файла и загрузка данных
         with open(file_path, 'r', encoding='utf-8') as f:

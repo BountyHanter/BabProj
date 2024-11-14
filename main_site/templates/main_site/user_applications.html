@@ -1,408 +1,135 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Заявки</title>
-    <link rel="icon" type="image/x-icon" href="{% static 'favicon.png' %}">
-    <!-- Подключаем Bootstrap 4 -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Подключаем иконки Font Awesome для иконок сортировки -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <!-- Подключаем Select2 стили -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <style>
-        .table-container {
-            max-height: 600px;
-            overflow-y: auto;
-        }
-        .sort-icon {
-            margin-left: 5px;
-            font-size: 0.8em;
-        }
-        .sortable-column {
-            transition: background-color 0.3s ease;
-        }
-        .sortable-column a {
+    <head>
+        <title>BadData</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.5">
+        <meta name="description" content="">
+        <meta name="keywords" content="">
 
-            /* Делаем ссылку блочным элементом только по вертикали, чтобы можно было нажимать на весь текст */
-            display: inline-block;
-
-            /* Подчёркиваем текст ссылки */
-            text-decoration: underline;
-
-            /* Цвет текста наследуется от родителя */
-            color: inherit;
-
-            /* Устанавливаем курсор pointer только для ссылки */
-            cursor: pointer;
-
-            /* Плавный переход цвета */
-            transition: color 0.3s ease;
-        }
-        .sortable-column a:hover {
-            color: #0056b3;            /* Изменение цвета текста при наведении */
-            text-decoration: underline; /* Подчёркивание при наведении */
-        }
-        .active-sort {
-            background-color: #e9ecef;
-        }
-        .active-application {
-            background-color: #d4edda;
-        }
-        .spinner-border-custom {
-            width: 3rem;
-            height: 3rem;
-            border-width: .3em;
-        }
-        .navbar-gradient {
-            background: linear-gradient(90deg, #ffffff, #000000);
-        }
-        body {
-            padding-top: 70px; /* Отступ, равный высоте навбара */
-        }
-        .nav-link {
-            border: 1px solid black; /* Обводка черным цветом */
-            border-radius: 5px; /* Скругление углов */
-            padding: 5px 10px; /* Внутренний отступ для кнопок */
-            margin: 5px; /* Внешний отступ для создания пространства между кнопками */
-            transition: all 0.3s ease; /* Плавный переход для эффектов */
-        }
-
-
-        .nav-link:hover {
-            background-color: lightgray; /* Изменение фона при наведении */
-            border-color: gray; /* Изменение цвета обводки при наведении */
-        }
-    </style>
-</head>
-<body>
-
-<!-- Навигационная панель -->
-<nav class="navbar navbar-expand-lg navbar-dark navbar-gradient fixed-top">
-    <a class="navbar-brand text-dark" href="{% url 'active_application' %}">BabData</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarNav">
-        <!-- Левые кнопки навигации и курс -->
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link text-dark" href="{% url 'active_application' %}">Активная заявка</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-dark" href="{% url 'user_applications' %}">Прошлые заявки</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-dark" href="{% url 'personal_cabinet' %}">Личный кабинет</a>
-            </li>
-            <li class="nav-item d-flex align-items-center">
-                <span class="navbar-text text-dark">
-                    Курс: {{ current_course }}
-                </span>
-            </li>
-        </ul>
-
-        <!-- Правые элементы: Имя пользователя и кнопка "Выход" -->
-        {% if user.is_authenticated %}
-        <ul class="navbar-nav ml-auto align-items-center">
-            <li class="nav-item">
-                <span class="navbar-text text-white mr-3">
-                    {{ user.username }}
-                </span>
-            </li>
-            <li class="nav-item">
-                <span class="navbar-text text-white mr-3">
-                    Баланс: {{ balance }} USDT
-                </span>
-            </li>
-            <li class="nav-item">
-                <form method="post" action="{% url 'logout' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-link nav-link text-white" style="display: inline; padding: 0; cursor: pointer;">
-                        Выход
-                    </button>
-                </form>
-            </li>
-        </ul>
-        {% endif %}
-    </div>
-</nav>
-
-
-
-<div class="container mt-5">
-    <h1 class="text-center mb-4">Заявки</h1>
-
-    <!-- Блок для отображения уведомлений -->
-    <div id="notification-container" style="position: fixed; top: 60px; right: 20px; z-index: 9999;"></div>
-
-    <!-- Отображение остальных заявок -->
-    <div id="other-applications-section">
-        <h3 class="mt-5 mb-3">Ваши прошлые заявки</h3>
-        <div class="mb-3">
-            <input type="text" id="table-search" class="form-control" placeholder="Поиск...">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    </head>
+    <body class="page_history_applications">
+        <div id="user-menu">
+            {% include 'main_site/user_menu.html' %}
         </div>
-        <div class="card">
-            <div class="card-body p-0">
-                <div class="table-responsive table-container">
-                    <table id="other-applications-table" class="table table-hover table-bordered mb-0">
-                        <thead class="thead-dark">
-                        <tr>
-                            <th scope="col" class="sortable-column {% if current_order_by == 'id' %}active-sort{% endif %}">
-                                <a href="?order_by=id&direction={% if current_order_by == 'id' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
-                                    ID
-                                    {% if current_order_by == 'id' %}
-                                        <i class="sort-icon {% if current_direction == 'asc' %}fas fa-sort-up{% else %}fas fa-sort-down{% endif %}"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
-                            <th scope="col" class="sortable-column {% if current_order_by == 'type' %}active-sort{% endif %}">
-                                <a href="?order_by=type&direction={% if current_order_by == 'type' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
-                                    Тип
-                                    {% if current_order_by == 'type' %}
-                                        <i class="sort-icon {% if current_direction == 'asc' %}fas fa-sort-up{% else %}fas fa-sort-down{% endif %}"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
-                            <th scope="col" class="sortable-column {% if current_order_by == 'to_bank' %}active-sort{% endif %}">
-                                <a href="?order_by=to_bank&direction={% if current_order_by == 'to_bank' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
-                                    Банк получателя
-                                    {% if current_order_by == 'to_bank' %}
-                                        <span class="sort-icon">{% if current_direction == 'asc' %}▲{% else %}▼{% endif %}</span>
-                                    {% endif %}
-                                </a>
-                            </th>
-                            <th scope="col" class="sortable-column {% if current_order_by == 'from_bank' %}active-sort{% endif %}">
-                                <a href="?order_by=from_bank&direction={% if current_order_by == 'from_bank' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
-                                    Банк отправителя
-                                    {% if current_order_by == 'from_bank' %}
-                                        <span class="sort-icon">{% if current_direction == 'asc' %}▲{% else %}▼{% endif %}</span>
-                                    {% endif %}
-                                </a>
-                            </th>
-                            <th scope="col" class="sortable-column {% if current_order_by == 'status' %}active-sort{% endif %}">
-                                <a href="?order_by=status&direction={% if current_order_by == 'status' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
-                                    Статус
-                                    {% if current_order_by == 'status' %}
-                                        <i class="sort-icon {% if current_direction == 'asc' %}fas fa-sort-up{% else %}fas fa-sort-down{% endif %}"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
-                            <th scope="col">Реквизиты</th>
-                            <th scope="col" class="sortable-column {% if current_order_by == 'amount' %}active-sort{% endif %}">
-                                <a href="?order_by=amount&direction={% if current_order_by == 'amount' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
-                                    Сумма
-                                    {% if current_order_by == 'amount' %}
-                                        <i class="sort-icon {% if current_direction == 'asc' %}fas fa-sort-up{% else %}fas fa-sort-down{% endif %}"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
-                            <th scope="col" class="sortable-column {% if current_order_by == 'created_at' %}active-sort{% endif %}">
-                                <a href="?order_by=created_at&direction={% if current_order_by == 'created_at' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
-                                    Время создания
-                                    {% if current_order_by == 'created_at' %}
-                                        <i class="sort-icon {% if current_direction == 'asc' %}fas fa-sort-up{% else %}fas fa-sort-down{% endif %}"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
-                            <th scope="col" class="sortable-column {% if current_order_by == 'taken_time' %}active-sort{% endif %}">
-                                <a href="?order_by=taken_time&direction={% if current_order_by == 'taken_time' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
-                                    Время взятия
-                                    {% if current_order_by == 'taken_time' %}
-                                        <i class="sort-icon {% if current_direction == 'asc' %}fas fa-sort-up{% else %}fas fa-sort-down{% endif %}"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
-                            <th scope="col" class="sortable-column {% if current_order_by == 'completed_time' %}active-sort{% endif %}">
-                                <a href="?order_by=completed_time&direction={% if current_order_by == 'completed_time' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
-                                    Время завершения
-                                    {% if current_order_by == 'completed_time' %}
-                                        <i class="sort-icon {% if current_direction == 'asc' %}fas fa-sort-up{% else %}fas fa-sort-down{% endif %}"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
-                            <th scope="col">Ссылка на чек</th>
+        <main class="main">
+            <section class="past_requests">
+                <div class="h1">
+                    Ваши прошлые заявки
+                    <div class="right_block">
+                        <label class="label_search">
+                            <input type="text" id="search-input" placeholder="Поиск...">
+                        </label>
+                        <a class="past_requests_find" onclick="searchApplications()">Найти</a>
+                        <a href="{% url 'user_generate_report' %}" class="past_requests_create_report">Создать отчёт</a>
+                    </div>
+                </div>
+                <div class="requests_table">
+                    <table>
+                        <tr class="table_head">
+                            <th>ID</th>
+                            <th>Тип</th>
+                            <th>Сумма<br>перевода</th>
+                            <th>Реквизиты</th>
+                            <th>Банк<br>получателя</th>
+                            <th>Банк<br>отправителя</th>
+                            <th>Статус</th>
+                            <th>Время<br>создания</th>
+                            <th>Время<br>взятия</th>
+                            <th>Время<br>завершения</th>
+                            <th>Ссылка<br>на чек в PDF</th>
                         </tr>
-                        </thead>
-                        <tbody>
-                        {% for application in other_applications %}
+                        {% for other_application in other_applications %}
                         <tr>
-                            <th scope="row">{{ application.id }}</th>
-                            <td>{{ application.type }}</td>
-                            <td>{{ application.to_bank }}</td>
-                            <td>{{ application.from_bank }}</td>
-                            <td>{{ application.status }}</td>
-                            <td>{{ application.payment_details }}</td>
-                            <td>{{ application.amount }}</td>
-                            <td>{{ application.created_at|date:"d.m.Y H:i:s" }}</td>
-                            <td>{% if application.taken_time %}{{ application.taken_time|date:"d.m.Y H:i:s" }}{% else %}N/A{% endif %}</td>
-                            <td>{% if application.completed_time %}{{ application.completed_time|date:"d.m.Y H:i:s" }}{% else %}N/A{% endif %}</td>
-                            <td>{% if application.receipt_link %}<a href="{{ application.receipt_link }}" target="_blank" class="btn btn-sm btn-outline-primary">Ссылка</a>{% else %}N/A{% endif %}</td>
+                            <th>{{ other_application.id }}</th>
+                            <th>{{ other_application.type }}</th>
+                            <th>{{ other_application.amount }}</th>
+                            <th>{{ other_application.payment_details }}</th>
+                            <th>{{ other_application.to_bank }}</th>
+                            <th>{{ other_application.from_bank|default:"None" }}</th>
+                            <th class="{% if other_application.status == 'canceled' %}canceled{% elif other_application.status == 'completed' %}completed{% elif other_application.status == 'manual' %}manual{% endif %}">
+                                {% if other_application.status == 'canceled' %}
+                                    Отклонено
+                                {% elif other_application.status == 'completed' %}
+                                    Завершено
+                                {% elif other_application.status == 'manual' %}
+                                    Обработка администратором
+                                {% endif %}
+                            </th>
+                            <th>{{ other_application.created_at|default:"None" }}</th>
+                            <th>{{ other_application.taken_time|default:"None" }}</th>
+                            <th>{{ other_application.completed_time|default:"None" }}</th>
+                            <th>{% if other_application.receipt_link %}<a href="{{ other_application.receipt_link }}" target="_blank">Ссылка</a>{% else %}None{% endif %}</th>
+
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="11" class="text-center">Заявок нет</td>
+                            <th colspan="6">Нет данных для отображения</th>
                         </tr>
                         {% endfor %}
-                        </tbody>
                     </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                    <div class="requests_table_footer">
+                        <div class="requests_value">
+                            <select name="requests_value" id="rowsPerPageSelect">
+                                <option value="15" {% if rows_per_page == 15 %}selected{% endif %}>15</option>
+                                <option value="50" {% if rows_per_page == 50 %}selected{% endif %}>50</option>
+                                <option value="100" {% if rows_per_page == 100 %}selected{% endif %}>100</option>
+                            </select>
+                            <a href="#" onclick="applyRowsPerPage()">Применить</a>
+                            <div class="coll_line">0 до 100 строк</div>
+                        </div>
 
-<!-- Модальное окно -->
-<div class="modal fade" id="receiptModal" tabindex="-1" role="dialog" aria-labelledby="receiptModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-        <input type="hidden" id="application-status" value="{{ active_application.status }}">
-        <div class="modal-header">
-            <h5 class="modal-title" id="receiptModalLabel">Заявка ID: <span id="application-id">{{ active_application.id }}</span></h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="modal-body">
-            <form id="receipt-form" action="{% url 'upload_receipt' %}" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <input type="hidden" name="application_id" value="{{ active_application.id }}">
+                        <div class="pagin">
+                            <ul>
+                                <!-- Отображаем первую страницу с многоточием при необходимости -->
+                                {% if 1 not in page_range %}
+                                    <li><a href="?page=1&rows_per_page={{ rows_per_page }}{% if request.GET.date_withdrawal %}&date_withdrawal={{ request.GET.date_withdrawal }}{% endif %}">1</a></li>
+                                    {% if page_number > 3 %}<li>...</li>{% endif %}
+                                {% endif %}
 
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label for="application-type">Тип заявки</label>
-                        <input type="text" class="form-control" id="application-type" value="{{ active_application.type }}" readonly>
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label for="amount">Сумма</label>
-                        <input type="text" class="form-control" id="amount" value="{{ active_application.amount }}" readonly>
-                    </div>
-                </div>
+                                <!-- Основной диапазон страниц -->
+                                {% for page in page_range %}
+                                    <li class="{% if page == page_number %}active{% endif %}">
+                                        <a href="?page={{ page }}&rows_per_page={{ rows_per_page }}{% if request.GET.date_withdrawal %}&date_withdrawal={{ request.GET.date_withdrawal }}{% endif %}">
+                                            {{ page }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
 
-                <div class="form-group">
-                    <label for="payment-details">Реквизиты</label>
-                    <input type="text" class="form-control" id="payment-details" value="{{ active_application.payment_details }}" readonly>
-                </div>
-
-                {% if active_application.status == 'active' %}
-                <div id="upload-section">
-                    <div class="form-group">
-                        <label for="bank-select">Банк, с которого оплатили</label>
-                        <select class="form-control select2" id="bank-select" name="bank_id" required>
-                            <option value="" disabled selected>Выберите банк</option>
-                            {% for bank in banks %}
-                                <option value="{{ bank.id }}">{{ bank.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="receipt-file">Загрузить чек</label>
-                        <div class="custom-file">
-                            <input type="file" class="custom-file-input" id="receipt-file" name="receipt" required>
-                            <label class="custom-file-label" for="receipt-file">Выберите файл</label>
+                                <!-- Отображение многоточия и последней страницы, если текущая страница далека от конца -->
+                                {% if total_pages not in page_range %}
+                                    {% if page_number < total_pages|add:"-2" %}<li>...</li>{% endif %}
+                                    <li><a href="?page={{ total_pages }}&rows_per_page={{ rows_per_page }}{% if request.GET.date_withdrawal %}&date_withdrawal={{ request.GET.date_withdrawal }}{% endif %}">{{ total_pages }}</a></li>
+                                {% endif %}
+                            </ul>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Отправить чек на проверку</button>
                 </div>
-                <div id="problem-btn" class="form-group mt-3">
-                    <button type="button" class="btn btn-danger" id="report-problem-btn">Проблема с оплатой</button>
-                </div>
-                {% endif %}
+            </section>
+        </main>
+        <script src="{% static 'main_site/js/jquery.js' %}"></script>
+    <script>
+        function applyRowsPerPage() {
+            const rowsPerPage = document.getElementById('rowsPerPageSelect').value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('rows_per_page', rowsPerPage);
+            url.searchParams.set('page', 1);  // Сбрасываем на первую страницу
+            window.location.href = url.toString();
+        }
+    </script>
+    <script>
+        function searchApplications() {
+            const searchText = document.getElementById("search-input").value;
+            const url = new URL(window.location.href);
 
-                {% if active_application.status != 'active' %}
-                <div id="info-section" class="mt-3">
-                    <div class="form-group">
-                        <label for="bank-name">Банк, с которого оплатили</label>
-                        <input type="text" class="form-control" id="bank-name" value="{{ active_application.bank_name }}" readonly>
-                    </div>
-                </div>
-                {% endif %}
+            // Устанавливаем параметр поиска в URL
+            url.searchParams.set('search', searchText);
 
-                <div id="loading-spinner" class="text-center my-3" style="display: none">
-                    <div class="spinner-border text-primary spinner-border-custom" role="status">
-                        <span class="sr-only">Загрузка...</span>
-                    </div>
-                    <p class="mt-2">Отправка чека...</p>
-                </div>
-
-                {% if active_application.status == 'processing' %}
-                <button type="button" id="confirmation-btn" class="btn btn-success">Подтвердить</button>
-                {% endif %}
-            </form>
-        </div>
-    </div>
-  </div>
-</div>
-
-<!-- Модальное окно для отчета о проблеме -->
-<div class="modal fade" id="problemModal" tabindex="-1" role="dialog" aria-labelledby="problemModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-md" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="problemModalLabel">Сообщите о проблеме для заявки ID: <span id="problem-application-id"></span></h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <form id="problem-form" method="post">
-          {% csrf_token %}
-          <input type="hidden" id="problem-application-id-input" name="application_id" value="">
-
-          <div class="form-group">
-            <label for="problem-text">Опишите проблему</label>
-            <textarea class="form-control" id="problem-text" name="problem" rows="3" required></textarea>
-          </div>
-          <button type="submit" class="btn btn-danger">Отправить</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Подключаем необходимые скрипты Bootstrap 4, jQuery и Select2 -->
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-<!-- Подключаем ваши статические файлы -->
-<script src="{% static 'websocket.js' %}"></script>
-<script src="{% static 'csrf_token.js' %}"></script>
-<script src="{% static 'show_notification.js' %}"></script>
-<script src="{% static 'show_modal.js' %}"></script>
-<script>
-    const banksData = {{ banks_json|safe }};
-</script>
-<script src="{% static 'show_banks.js' %}"></script>
-<script src="{% static 'upload_receipt.js' %}"></script>
-<script>
-    const takeApplicationUrl = "{% url 'take_application' %}";
-    const userApplicationsUrl = "{% url 'user_applications' %}";
-    const confirmApplicationsUrl = "{% url 'confirm_application' %}";
-    const activeApplication = "{{ active_application }}";
-    const reportProblemUrl = {% url 'report_problem' %}
-    const socketDomain = new WebSocket('wss://{{ websocket_url }}/ws/update/');
-</script>
-<script src="{% static 'update_page.js' %}"></script>
-<script src="{% static 'confirm.js' %}"></script>
-<script src="{% static 'timer.js' %}"></script>
-<script src="{% static 'report.js' %}"></script>
-
-<script>
-    $(document).ready(function() {
-        $("#table-search").on("keyup", function() {
-            var value = $(this).val().toLowerCase();
-            $("#other-applications-table tbody tr").filter(function() {
-                var rowText = $(this).find("td:not(:last-child), th").text().toLowerCase();
-                $(this).toggle(rowText.indexOf(value) > -1);
-            });
-        });
-    });
-</script>
-</body>
+            // Перенаправляем на URL с параметром поиска
+            window.location.href = url.toString();
+        }
+    </script>
+    </body>
 </html>

@@ -29,39 +29,40 @@ def take_application(request):
 
     if not user_profile.active:
         return JsonResponse(
-            {"error": "Вы не можете брать заявки, так как ваша возможность обработки заявок отключена."}, status=403)
+            {"error": "Вы не можете брать заявки, так как ваша возможность обработки заявок отключена."},
+            status=403)
 
     user_id = user.id
 
-    active_application = Application.objects.select_for_update().filter(executor=user_id, status='active').first()
-    if active_application:
+    # Проверяем, есть ли у пользователя активная заявка
+    active_application_exists = Application.objects.filter(
+        executor=user_id, status='active'
+    ).exists()
+    if active_application_exists:
         return JsonResponse({"error": "У вас уже есть активная заявка"}, status=400)
 
-    min_amount = user_profile.min_amount
-    max_amount = user_profile.max_amount
+    # Формируем фильтры для заявок
+    filters = Q(status='new')
 
-    if min_amount > 0 and max_amount > 0:
-        amount_filter = Q(amount__gte=min_amount) & Q(amount__lte=max_amount)
-    elif min_amount > 0:
-        amount_filter = Q(amount__gte=min_amount)
-    elif max_amount > 0:
-        amount_filter = Q(amount__lte=max_amount)
-    else:
-        amount_filter = Q()
+    if user_profile.recipients_bank:
+        filters &= Q(to_bank__in=user_profile.recipients_bank)
 
-    # Находим ID мерчантов с балансом ниже лимита
+    if user_profile.min_amount and user_profile.max_amount:
+        filters &= Q(amount__gte=user_profile.min_amount, amount__lte=user_profile.max_amount)
+    elif user_profile.min_amount:
+        filters &= Q(amount__gte=user_profile.min_amount)
+    elif user_profile.max_amount:
+        filters &= Q(amount__lte=user_profile.max_amount)
+
+    # Идентификаторы мерчантов с балансом ниже лимита
     merchants_below_limit = UserProfile.objects.filter(
         merchant_balance__lt=F('merchant_limit')
-    ).values('user')
+    ).values_list('user_id', flat=True)
 
-    # Ищем подходящую заявку, исключая заявки от мерчантов с низким балансом
-    application = (Application.objects
-                   .select_for_update()
-                   .filter(status='new')
-                   .filter(amount_filter)
-                   .exclude(merchant_id__in=Subquery(merchants_below_limit))
-                   .order_by('id')
-                   .first())
+    filters &= ~Q(merchant_id__in=merchants_below_limit)
+
+    # Пытаемся взять новую заявку
+    application = Application.objects.select_for_update().filter(filters).order_by('id').first()
 
     if application:
         application.executor = request.user

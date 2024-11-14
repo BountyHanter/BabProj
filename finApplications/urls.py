@@ -23,8 +23,8 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
 
-from database.views.auth_views import user_login
-from database.views.web_views import merchant_dashboard
+from database.views.auth import user_login
+from main_site.views.merchant_dashboard import merchant_dashboard
 
 urlpatterns = [
     path('Yay2tieW/', admin.site.urls),

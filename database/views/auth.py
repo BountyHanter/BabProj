@@ -14,7 +14,7 @@ def user_login(request: HttpRequest) -> HttpResponse:
         try:
             user = User.objects.get(username=username)
             if not user.is_active:
-                return render(request, 'database/login.html', {
+                return render(request, 'main_site/login.html', {
                     'error': 'Ваша учетная запись деактивирована, обратитесь к администрации.',
                     'next': next_url
                 })
@@ -26,10 +26,10 @@ def user_login(request: HttpRequest) -> HttpResponse:
             auth_login(request, user)
             return redirect(next_url)
         else:
-            return render(request, 'database/login.html', {
+            return render(request, 'main_site/login.html', {
                 'error': 'Неправильный логин или пароль',
                 'next': next_url
             })
     else:
         next_url = request.GET.get('next', 'user_applications')
-        return render(request, 'database/login.html', {'next': next_url})
+        return render(request, 'main_site/login.html', {'next': next_url})
