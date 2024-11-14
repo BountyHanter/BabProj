@@ -1,333 +1,321 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>Личный Кабинет</title>
-    <!-- Подключение Bootstrap CSS -->
-    <link rel="icon" type="image/x-icon" href="{% static 'favicon.png' %}">
+    <head>
+        <title>BadData</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="keywords" content="">
+        <style>
+/* Контейнер для уведомлений */
+#notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 300px;
+    z-index: 9999;
+}
 
-    <!-- Подключаем Bootstrap 4 -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+/* Стили для уведомлений */
+.notification {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin-bottom: 10px;
+    position: relative;
+    display: none; /* Скрыто по умолчанию */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
 
-    <!-- Ваши дополнительные стили -->
-    <style>
-        body {
-            padding-top: 60px;
-        }
-        .status-active {
-            color: green;
-            font-weight: bold;
-        }
-        .status-inactive {
-            color: red;
-            font-weight: bold;
-        }
-        .navbar-gradient {
-            background: linear-gradient(90deg, #ffffff, #000000);
-        }
-        .nav-link {
-            border: 1px solid black; /* Обводка черным цветом */
-            border-radius: 5px; /* Скругление углов */
-            padding: 5px 10px; /* Внутренний отступ для кнопок */
-            margin: 5px; /* Внешний отступ для создания пространства между кнопками */
-            transition: all 0.3s ease; /* Плавный переход для эффектов */
-        }
+/* Кнопка закрытия уведомления */
+.notification .close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+}
 
+/* Стили для иконок */
+.notification .icon {
+    float: left;
+    margin-right: 10px;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 16px;
+    line-height: 24px;
+}
 
-        .nav-link:hover {
-            background-color: lightgray; /* Изменение фона при наведении */
-            border-color: gray; /* Изменение цвета обводки при наведении */
-        }
-    </style>
-</head>
-<body>
-    <!-- Навигационная панель -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-gradient fixed-top">
-        <a class="navbar-brand text-dark" href="{% url 'active_application' %}">BabData</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+.success-icon {
+    background-color: #28a745; /* Зеленый фон */
+}
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <!-- Левые кнопки навигации и курс -->
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{% url 'active_application' %}">Активная заявка</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{% url 'user_applications' %}">Прошлые заявки</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{% url 'personal_cabinet' %}">Личный кабинет</a>
-                </li>
-                <li class="nav-item d-flex align-items-center">
-                    <span class="navbar-text text-dark" data-toggle="tooltip" data-placement="top" title="Время замера: {{ course_taken_at }}">
-                        Курс: {{ current_course }}
-                    </span>
-                </li>
-            </ul>
+.error-icon {
+    background-color: #dc3545; /* Красный фон */
+}
 
-            <!-- Правые элементы: Имя пользователя и кнопка "Выход" -->
-            {% if user.is_authenticated %}
-            <ul class="navbar-nav ml-auto align-items-center">
-                <li class="nav-item">
-                    <span class="navbar-text text-white mr-3">
-                        {{ user.username }}
-                    </span>
-                </li>
-                <li class="nav-item">
-                    <span class="navbar-text text-white mr-3">
-                        Баланс: {{ balance }} USDT
-                    </span>
-                </li>
-                <li class="nav-item">
-                    <form method="post" action="{% url 'logout' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-link nav-link text-white" style="display: inline; padding: 0; cursor: pointer;">
-                            Выход
-                        </button>
-                    </form>
-                </li>
-            </ul>
-            {% endif %}
+/* Стили для содержимого сообщения */
+.notification .message-content {
+    overflow: hidden;
+}
+        </style>
+
+        <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    </head>
+    <body class="page_personal_account">
+        <div id="user-menu">
+            {% include 'main_site/user_menu.html' %}
         </div>
-    </nav>
-    <!-- Основной контейнер -->
-    <div class="container">
-        <!-- Блок для отображения уведомлений -->
-        <div id="notification-container" style="position: fixed; top: 60px; right: 20px; z-index: 9999;"></div>
+        <main class="main">
+            <section class="dalance">
+                <div class="h1">Личный кабинет</div>
+                <div class="dalance_tab">
+                    <div class="tab_left">
+                        <div class="title">
+                            <span class="h2">
+                                <img src="{% static 'img/bid.svg' %}"> Выполненные заявки
+                            </span>
+                            <label class="input_date_on_placeholder">
+                                <input id="date_application" placeholder="Выбрать период:" type="text"
+                                       onfocus="this.type='date'"
+                                       onblur="if(this.value==''){this.type='text'}"/>
+                            </label>
+                            <a class="btn_g" id="filter_button">Фильтровать</a>
+                        </div>
+                        <div class="tab_left_val"><b>{{ all_time_sum }}</b> RUB</div>
+                        <div class="h3">Успешные сделки: {{ applications_count }}</div>
+                    </div>
 
-        <h1 class="text-center mb-4">Личный кабинет</h1>
-        <!-- Статус пользователя -->
-        <div class="row mb-4">
-            <div class="col">
-                <div class="alert {% if is_active %}alert-success{% else %}alert-danger{% endif %}" role="alert">
-                    Статус:
-                    {% if is_active %}
-                        <span class="status-active">Активен</span>
-                    {% else %}
-                        <span class="status-inactive">Неактивен</span>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Статистика по заявкам -->
-        <div class="row mb-4">
-            <div class="col">
-                <h3>Статистика по заявкам</h3>
-                <div class="row">
-                    <!-- Сегодня -->
-                    <div class="col-md-3">
-                        <div class="card text-white bg-primary mb-3">
-                            <div class="card-header">Сегодня</div>
-                            <div class="card-body">
-                                <h5 class="card-title">{{ applications_stats.today_count }} заявок</h5>
-                                <p class="card-text">Сумма: {{ applications_stats.today_sum }} ₽</p>
-                            </div>
+                    <div class="tab_right">
+                        <div class="title">
+                            <span class="h2"><img src="{% static 'img/balance.svg' %}">Баланс</span>
                         </div>
-                    </div>
-                    <!-- Неделя -->
-                    <div class="col-md-3">
-                        <div class="card text-white bg-secondary mb-3">
-                            <div class="card-header">Неделя</div>
-                            <div class="card-body">
-                                <h5 class="card-title">{{ applications_stats.week_count }} заявок</h5>
-                                <p class="card-text">Сумма: {{ applications_stats.week_sum }} ₽</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Месяц -->
-                    <div class="col-md-3">
-                        <div class="card text-white bg-success mb-3">
-                            <div class="card-header">Месяц</div>
-                            <div class="card-body">
-                                <h5 class="card-title">{{ applications_stats.month_count }} заявок</h5>
-                                <p class="card-text">Сумма: {{ applications_stats.month_sum }} ₽</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Все время -->
-                    <div class="col-md-3">
-                        <div class="card text-white bg-danger mb-3">
-                            <div class="card-header">Все время</div>
-                            <div class="card-body">
-                                <h5 class="card-title">{{ applications_stats.all_time_count }} заявок</h5>
-                                <p class="card-text">Сумма: {{ applications_stats.all_time_sum }} ₽</p>
-                            </div>
-                        </div>
+                        <div class="tab_right_val"><b>{{ balance }}</b> USDT</div>
+                        <a class="tab_right_button" style="cursor: pointer" onclick="openModal()">Создать запрос на вывод</a>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Статистика по запросам на вывод средств -->
-        <div class="row mb-4">
-            <div class="col">
-                <h3>Статистика по запросам на вывод средств</h3>
-                <div class="row">
-                    <!-- Сегодня -->
-                    <div class="col-md-3">
-                        <div class="card text-white bg-primary mb-3">
-                            <div class="card-header">Сегодня</div>
-                            <div class="card-body">
-                                <h5 class="card-title">{{ withdrawals_stats.today_count }} запросов</h5>
-                                <p class="card-text">Сумма: {{ withdrawals_stats.today_sum }} USDT</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Неделя -->
-                    <div class="col-md-3">
-                        <div class="card text-white bg-secondary mb-3">
-                            <div class="card-header">Неделя</div>
-                            <div class="card-body">
-                                <h5 class="card-title">{{ withdrawals_stats.week_count }} запросов</h5>
-                                <p class="card-text">Сумма: {{ withdrawals_stats.week_sum }} USDT</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Месяц -->
-                    <div class="col-md-3">
-                        <div class="card text-white bg-success mb-3">
-                            <div class="card-header">Месяц</div>
-                            <div class="card-body">
-                                <h5 class="card-title">{{ withdrawals_stats.month_count }} запросов</h5>
-                                <p class="card-text">Сумма: {{ withdrawals_stats.month_sum }} USDT</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Все время -->
-                    <div class="col-md-3">
-                        <div class="card text-white bg-danger mb-3">
-                            <div class="card-header">Все время</div>
-                            <div class="card-body">
-                                <h5 class="card-title">{{ withdrawals_stats.all_time_count }} запросов</h5>
-                                <p class="card-text">Сумма: {{ withdrawals_stats.all_time_sum }} USDT</p>
-                            </div>
-                        </div>
+            </section>
+            <section class="requests">
+                <div class="h1" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Мои запросы на вывод средств</span>
+                    <div class="filter-container" style="display: inline-flex; align-items: center; gap: 10px;">
+                        <label class="input_date_on_placeholder">
+                            <input id="date_withdrawal" placeholder="Выбрать период:" type="text"
+                                   onfocus="this.type='date'"
+                                   onblur="if(this.value==''){this.type='text'}"/>
+                        </label>
+                        <a class="btn_b filter_btn" style="cursor: pointer;" onclick="filterWithdrawals()">Фильтровать</a>
                     </div>
                 </div>
-            </div>
-        </div>
+                <div class="requests_table">
+                    <table>
+                        <tr class="table_head">
+                            <th>ID</th>
+                            <th>Дата запроса</th>
+                            <th>Дата исполнения</th>
+                            <th>Сумма (USDT)</th>
+                            <th>Хэш транзакции</th>
+                            <th>Статус</th>
+                        </tr>
 
-        <!-- Кнопка страницы запроса отчёта -->
-        <div class="row mb-4">
-            <div class="col">
-                <a href="{% url 'generate_report' %}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                    Перейти к отчёту
-                </a>
-            </div>
-        </div>
+                        {% for withdrawal in withdrawals %}
+                        <tr>
+                            <th>{{ withdrawal.id }}</th>
+                            <th>{{ withdrawal.request_date }}</th>
+                            <th>{{ withdrawal.execution_date|default:"None" }}</th>
 
-        <!-- Кнопка для запроса вывода средств -->
-        <div class="row mb-4">
-            <div class="col">
-                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#withdrawalModal">
-                    Запросить вывод средств
-                </button>
-            </div>
-        </div>
+                            <!-- Применение классов цвета в зависимости от статуса -->
+                            <th class="{% if withdrawal.status == 'processing' %}y{% elif withdrawal.status == 'canceled' %}r{% elif withdrawal.status == 'completed' %}g{% endif %}">
+                                {{ withdrawal.amount }} USDT
+                            </th>
 
-        <!-- Модальное окно для запроса вывода средств -->
-        <div class="modal fade" id="withdrawalModal" tabindex="-1" aria-labelledby="withdrawalModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form id="withdrawalForm" method="post" action="{% url 'request_withdrawal' %}">
-                        {% csrf_token %}
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="withdrawalModalLabel">Запросить вывод средств</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="amount" class="form-label">Сумма (USDT)</label>
-                                <input type="number" step="0.01" min="0" class="form-control" id="amount" name="amount" required>
-                            </div>
-                            <!-- Добавьте дополнительные поля, если необходимо -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
-                            <button type="submit" class="btn btn-primary">Отправить запрос</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+                            <th>{{ withdrawal.transaction_hash|default:"-" }}</th>
 
-        <!-- Таблица с запросами на вывод средств -->
-        <div class="row">
-            <div class="col">
-                <h3>Мои запросы на вывод средств</h3>
-                <div class="table-responsive">
-                    <table class="table table-striped table-bordered">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>ID</th>
-                                <th>Дата запроса</th>
-                                <th>Сумма (USDT)</th>
-                                <th>Статус</th>
-                                <th>Дата исполнения</th>
-                                <th>Хэш транзакции</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for request in withdrawal_requests %}
-                                <tr>
-                                    <td>{{ request.id }}</td>
-                                    <td>{{ request.request_date|date:"d.m.Y H:i" }}</td>
-                                    <td>{{ request.amount }}</td>
-                                    <td>
-                                        {% if request.status == 'completed' %}
-                                            <span class="badge bg-success">Выполнен</span>
-                                        {% elif request.status == 'processing' %}
-                                            <span class="badge bg-warning text-dark">В обработке</span>
-                                        {% elif request.status == 'canceled' %}
-                                            <span class="badge bg-danger">Отменён</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">Неизвестно</span>
-                                        {% endif %}
-                                    </td>
-
-                                    <td>
-                                        {% if request.execution_date %}
-                                            {{ request.execution_date|date:"d.m.Y H:i" }}
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ request.transaction_hash|default:"-" }}</td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="6" class="text-center">Нет запросов на вывод средств.</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
+                            <!-- Статус с цветом -->
+                            <th class="{% if withdrawal.status == 'processing' %}y{% elif withdrawal.status == 'canceled' %}r{% elif withdrawal.status == 'completed' %}g{% endif %}">
+                                {% if withdrawal.status == 'processing' %}
+                                    В обработке
+                                {% elif withdrawal.status == 'canceled' %}
+                                    Отклонено
+                                {% elif withdrawal.status == 'completed' %}
+                                    Одобрено
+                                {% endif %}
+                            </th>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <th colspan="6">Нет данных для отображения</th>
+                        </tr>
+                        {% endfor %}
                     </table>
+
+                    <div class="requests_table_footer">
+                        <div class="requests_value">
+                            <select name="requests_value" id="rowsPerPageSelect">
+                                <option value="15" {% if rows_per_page == 15 %}selected{% endif %}>15</option>
+                                <option value="50" {% if rows_per_page == 50 %}selected{% endif %}>50</option>
+                                <option value="100" {% if rows_per_page == 100 %}selected{% endif %}>100</option>
+                            </select>
+                            <a href="#" onclick="applyRowsPerPage()">Применить</a>
+                            <div class="coll_line">0 до 100 строк</div>
+                        </div>
+
+                        <div class="pagin">
+                            <ul>
+                                <!-- Отображаем первую страницу с многоточием при необходимости -->
+                                {% if 1 not in page_range %}
+                                    <li><a href="?page=1&rows_per_page={{ rows_per_page }}{% if request.GET.date_withdrawal %}&date_withdrawal={{ request.GET.date_withdrawal }}{% endif %}">1</a></li>
+                                    {% if page_number > 3 %}<li>...</li>{% endif %}
+                                {% endif %}
+
+                                <!-- Основной диапазон страниц -->
+                                {% for page in page_range %}
+                                    <li class="{% if page == page_number %}active{% endif %}">
+                                        <a href="?page={{ page }}&rows_per_page={{ rows_per_page }}{% if request.GET.date_withdrawal %}&date_withdrawal={{ request.GET.date_withdrawal }}{% endif %}">
+                                            {{ page }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+
+                                <!-- Отображение многоточия и последней страницы, если текущая страница далека от конца -->
+                                {% if total_pages not in page_range %}
+                                    {% if page_number < total_pages|add:"-2" %}<li>...</li>{% endif %}
+                                    <li><a href="?page={{ total_pages }}&rows_per_page={{ rows_per_page }}{% if request.GET.date_withdrawal %}&date_withdrawal={{ request.GET.date_withdrawal }}{% endif %}">{{ total_pages }}</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
                 </div>
+            </section>
+        </main>
+
+        <div class="modal modal_request_withdrawal" style="display: none;">
+            <div class="modal_content">
+                <button class="close" onclick="closeModal()">
+                    <img src="{% static 'img/close.svg' %}">
+                </button>
+                <div class="modal_title">Запросить вывод средств</div>
+                <div class="modal_title_sub">Сумма (USDT)</div>
+                <label>
+                    <input type="text" id="withdrawal-amount" placeholder="Минимальная сумма: 100 USDT">
+                    <span id="error-message" style="color: red; display: none;">Минимальная сумма: 100 USDT</span>
+                </label>
+                <a class="btn_b" onclick="submitWithdrawalRequest()">Создать запрос</a>
             </div>
         </div>
 
-    </div>
+        <div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
 
-    <!-- Подключение jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Подключение Popper.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
-    <!-- Подключение Bootstrap 5 JS -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <!-- Ваши дополнительные скрипты -->
-    <script src="{% static 'request_withdrawal.js' %}"></script>
-    <script src="{% static 'show_notification.js' %}"></script>
 
-    <script>
-        $(document).ready(function(){
-            $('[data-toggle="tooltip"]').tooltip();  // Инициализация подсказок
-        });
-    </script>
+        <script src="{% static 'main_site/js/jquery.js' %}"></script>
+        <script src="{% static 'main_site/js/csrf_token.js' %}"></script>
+        <script src="{% static 'main_site/js/show_notification.js' %}"></script>
+        <script>
+            const WithdrawalRequestUrl = "{% url 'request_withdrawal' %}";
+        </script>
+        <script>
+            document.getElementById('filter_button').addEventListener('click', function () {
+                const dateValue = document.getElementById('date_application').value;
+                const url = new URL(window.location.href);
 
-</body>
+                // Добавляем дату как параметр GET-запроса
+                if (dateValue) {
+                    url.searchParams.set('date_application', dateValue);
+                } else {
+                    url.searchParams.delete('date_application');
+                }
+
+                // Перенаправляем на обновленный URL
+                window.location.href = url.toString();
+            });
+
+        </script>
+        <script>
+            function filterWithdrawals() {
+                // Получаем значение даты
+                const dateValue = document.getElementById('date_withdrawal').value;
+
+                // Создаем URL с параметром даты
+                const url = new URL(window.location.href);
+                if (dateValue) {
+                    url.searchParams.set('date_withdrawal', dateValue);
+                } else {
+                    url.searchParams.delete('date_withdrawal'); // Удаляем параметр, если нет даты
+                }
+
+                // Перенаправляем на обновленный URL
+                window.location.href = url.toString();
+            }
+        </script>
+        <script>
+            function applyRowsPerPage() {
+                const rowsPerPage = document.getElementById('rowsPerPageSelect').value;
+                const url = new URL(window.location.href);
+                url.searchParams.set('rows_per_page', rowsPerPage);
+                url.searchParams.set('page', 1);  // Сбрасываем на первую страницу
+                window.location.href = url.toString();
+            }
+
+        </script>
+        <script>
+            // Открытие модального окна
+            function openModal() {
+                document.querySelector('.modal_request_withdrawal').style.display = 'block';
+            }
+
+            // Закрытие модального окна
+            function closeModal() {
+                document.querySelector('.modal_request_withdrawal').style.display = 'none';
+            }
+
+            // Отправка запроса на вывод
+            function submitWithdrawalRequest() {
+                const amountInput = document.getElementById("withdrawal-amount");
+                const errorMessage = document.getElementById("error-message");
+                const amount = parseFloat(amountInput.value);
+
+                // Проверка на минимальную сумму
+                if (isNaN(amount) || amount < 100) {
+                    errorMessage.style.display = 'block';
+                    return;
+                } else {
+                    errorMessage.style.display = 'none';
+                }
+
+                // Отправка запроса на сервер
+                fetch(WithdrawalRequestUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),  // CSRF-токен
+                    },
+                    body: JSON.stringify({ amount: amount })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage("Запрос на вывод успешно создан", 'success');
+                        closeModal();
+                        // Перезагрузка страницы через 5 секунд
+                        setTimeout(function() {
+                            location.reload();
+                        }, 2000);
+                    } else {
+                        showMessage("Ошибка: " + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showMessage("Ошибка при отправке запроса: " + error, 'error');
+                });
+            }
+        </script>
+
+    </body>
 </html>
-

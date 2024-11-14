@@ -53,6 +53,7 @@ class UserProfile(models.Model):
     receipt_chat_id = models.CharField(null=True, blank=True, max_length=255, verbose_name='ID чата для чеков')
     problems_chat_id = models.CharField(null=True, blank=True, max_length=255, verbose_name='ID чата '
                                                                                             'для проблем с оплатой')
+    recipients_bank = models.JSONField(null=True, blank=True, verbose_name='Банки для перевода')
 
     def __str__(self):
         return f"Профиль для {self.user.username}"

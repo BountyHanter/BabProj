@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth.decorators import login_required
@@ -11,7 +12,14 @@ from main_site.utils.telegram_api import send_request_withdrawal
 def request_withdrawal(request):
     if request.method == 'POST':
         username = request.user.username
-        amount = request.POST.get('amount')
+        # Извлечение данных из JSON-запроса
+        try:
+            data = json.loads(request.body)
+            amount = data.get('amount')
+        except (json.JSONDecodeError, KeyError, TypeError):
+            return JsonResponse({'success': False, 'message': 'Неверный формат данных.'}, status=400)
+
+        # Проверка и конвертация суммы
         try:
             amount = Decimal(amount)
             if amount <= 0:

@@ -8,7 +8,7 @@ from database.models.application import Application
 from finApplications.settings import BASE_DIR
 
 # Полный путь к файлу banks.json
-file_path = os.path.join(BASE_DIR, 'main_site/banks.json')
+file_path = os.path.join(BASE_DIR, 'database/banks.json')
 
 # Загрузим данные из banks.json
 with open(file_path, 'r', encoding='utf-8') as f:

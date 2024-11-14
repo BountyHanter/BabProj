@@ -1,0 +1,184 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <title>BadData</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="keywords" content="">
+
+        <style>
+.pagin ul li a {
+    cursor: pointer;
+}
+
+.pagin ul li.active a {
+    cursor: default; /* Для текущей страницы можно оставить стандартный курсор */
+}
+        </style>
+
+        <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    </head>
+    <body class="page_history_applications m_history">
+        <header class="header">
+            <a href="{% url 'merchant_dashboard' %}"><img class="logo" src="{% static 'img/logo_m.svg' %}" alt="Logo"></a>
+            <div class="head_info">
+                <span>
+                    <img src="{% static 'img/p.svg' %}" alt="Курс"> Курс: <b>{{ bybit_price }} ₽</b>
+                </span>
+                <span>
+                    <img src="{% static 'img/calendar.svg' %}" alt="Сумма заявок"> Сумма открытых заявок: <b>{{ total_amount }} ₽</b>
+                </span>
+                <span>
+                    <img src="{% static 'img/wallet.svg' %}" alt="Баланс"> Баланс: <b>{{ merchant_balance }} USDT</b>
+                </span>
+            </div>
+            <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="header_button" style="cursor: pointer;">
+                    Выйти <img src="{% static 'img/door.svg' %}" alt="Выйти">
+                </button>
+            </form>
+        </header>
+        <main class="main">
+            <section class="past_requests">
+                <div class="h1">
+                    Заявки
+                    <div class="right_block">
+                        <label class="select_label">
+                            <select class="color_select" id="statusSelect">
+                                <option value="">• Статус заявки:</option>
+                                <option class="new" value="new">• New</option>
+                                <option class="active" value="active">• Active</option>
+                                <option class="processing" value="processing">• Processing</option>
+                                <option class="completed" value="completed">• Completed</option>
+                                <option class="canceled" value="canceled">• Canceled</option>
+                                <option class="manual" value="manual">• Manual</option>
+                            </select>
+                        </label>
+                        <label class="input_date_on_placeholder">
+                            <input id="dateFrom" class="" placeholder="Дата от:" type="text" onfocus="this.type='date'" onblur="if(this.value==''){this.type='text'}"/>
+                        </label>
+                        <label class="input_date_on_placeholder">
+                            <input id="dateTo" class="" placeholder="Дата до:" type="text" onfocus="this.type='date'" onblur="if(this.value==''){this.type='text'}"/>
+                        </label>
+                        <a class="btn_b filter_btn" style="cursor: pointer;">Фильтровать</a>
+                        <a href="{% url 'm_generate_report' %}" class="btn_b filter_btn_report">Создать отчёт</a>
+                    </div>
+                </div>
+                <div class="requests_table">
+                    <table>
+                        <thead>
+                            <tr class="table_head">
+                                <th>ID</th>
+                                <th>Тип</th>
+                                <th>Сумма<br>перевода</th>
+                                <th>Реквизиты</th>
+                                <th>Банк<br>получателя</th>
+                                <th>Банк<br>отправителя</th>
+                                <th>Статус</th>
+                                <th>Время<br>создания</th>
+                                <th>Время<br>взятия</th>
+                                <th>Время<br>завершения</th>
+                                <th>Ссылка<br>на чек</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for application in applications %}
+                            <tr>
+                                <th scope="row">{{ application.id }}</th>
+                                <td>{{ application.type }}</td>
+                                <td>{{ application.amount }}</td>
+                                <td>{{ application.payment_details }}</td>
+                                <td>{{ application.to_bank }}</td>
+                                <td>{{ application.from_bank }}</td>
+                                <td class="{% if application.status == 'new' %}new{% elif application.status == 'active' %}active{% elif application.status == 'processing' %}processing{% elif application.status == 'completed' %}completed{% elif application.status == 'canceled' %}canceled{% elif application.status == 'manual' %}manual{% endif %}">
+                                    {% if application.status == 'new' %}
+                                        Новая
+                                    {% elif application.status == 'active' %}
+                                        Взята
+                                    {% elif application.status == 'processing' %}
+                                        В обработке
+                                    {% elif application.status == 'completed' %}
+                                        Завершена
+                                    {% elif application.status == 'canceled' %}
+                                        Отклонена
+                                    {% elif application.status == 'manual' %}
+                                        Обработка администратором
+                                    {% endif %}
+                                </td>
+                                <td>{{ application.created_at|date:"d.m.Y H:i" }}</td>
+                                <td>{% if application.taken_time %}{{ application.taken_time|date:"d.m.Y H:i" }}{% else %}None{% endif %}</td>
+                                <td>{% if application.completed_time %}{{ application.completed_time|date:"d.m.Y H:i" }}{% else %}None{% endif %}</td>
+                                <td>{% if application.receipt_link %}<a href="{{ application.receipt_link }}" target="_blank">Ссылка</a>{% else %}None{% endif %}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="11">Нет данных для отображения</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="requests_table_footer">
+                        <div class="requests_value">
+                            <select name="requests_value">
+                                <option value="15" selected>15</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                            <a class="apply-button" style="cursor: pointer;">Применить</a> <!-- Добавляем класс для кнопки -->
+                            <div class="coll_line">0 до 100 строк</div>
+                        </div>
+                        <div class="pagin">
+                            <ul>
+                                <!-- Проверяем, нужно ли отображать первую страницу -->
+                                {% if 1 not in page_range %}
+                                    <li><a href="?page=1&rows_per_page={{ rows_per_page }}&status={{ request.GET.status }}">1</a></li>
+                                    {% if current_page > 3 %}<li>...</li>{% endif %}
+                                {% endif %}
+
+                                <!-- Диапазон страниц -->
+                                {% for page_num in page_range %}
+                                    <li class="{% if page_num == current_page %}active{% endif %}">
+                                        <a href="?page={{ page_num }}&rows_per_page={{ rows_per_page }}&status={{ request.GET.status }}">{{ page_num }}</a>
+                                    </li>
+                                {% endfor %}
+
+                                <!-- Проверяем, нужно ли отображать многоточие и последнюю страницу -->
+                                {% if current_page < total_pages|add:"-2" %}
+                                    <li>...</li>
+                                {% endif %}
+
+                                {% if total_pages not in page_range %}
+                                    <li><a href="?page={{ total_pages }}&rows_per_page={{ rows_per_page }}&status={{ request.GET.status }}">{{ total_pages }}</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    <script src={% static 'main_site/js/ajax_rows.js' %}></script>
+
+    <script>
+        // Скрипт для изменения цвета выбранного статуса заявки
+        document.addEventListener("DOMContentLoaded", function () {
+            const statusSelect = document.querySelector("#statusSelect");
+
+            statusSelect.addEventListener("change", function () {
+                // Удаляем все классы цвета
+                statusSelect.classList.remove("new", "active", "processing", "completed", "canceled", "manual");
+
+                // Получаем значение выбранного option
+                const selectedOption = statusSelect.options[statusSelect.selectedIndex];
+
+                // Если выбран статус, добавляем соответствующий класс
+                if (selectedOption.value) {
+                    statusSelect.classList.add(selectedOption.value);
+                }
+            });
+        });
+    </script>
+    </body>
+</html>

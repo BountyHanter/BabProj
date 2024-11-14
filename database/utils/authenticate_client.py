@@ -15,11 +15,12 @@ def authenticate_client(request):
     client_id = request.headers.get('Client-Id')
     api_key_plain = request.headers.get('Api-Key')
 
+
     # Проверяем наличие Client-Id и Api-Key
     if not client_id or not api_key_plain:
         return Response({
             "status": "error",
-            "description": "Требуется Client ID и Api Key."
+            "description": "Требуется Client_Id и Api_Key."
         }, status=status.HTTP_400_BAD_REQUEST), None
 
     # Ищем запись APIKey по client_id

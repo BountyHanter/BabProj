@@ -76,7 +76,7 @@ class Application(models.Model):
         max_length=255, verbose_name='Реквизиты'
     )
     to_bank = models.CharField(
-        verbose_name='Банк клиента для перевода'
+        verbose_name='Банк получателя средств'
     )
     from_bank = models.CharField(
         max_length=255, null=True, blank=True, verbose_name='Банк отправителя средств'

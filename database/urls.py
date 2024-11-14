@@ -1,6 +1,6 @@
 from django.urls import path
 
-from database.views.api_views import ApplicationCreateView, ApplicationUpdateView, BanksListAPIView, \
+from database.views.api import ApplicationCreateView, ApplicationUpdateView, BanksListAPIView, \
     ApplicationStatusView
 
 
