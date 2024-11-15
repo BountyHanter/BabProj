@@ -1,3 +1,4 @@
+{% load tz %}
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
@@ -60,9 +61,9 @@
                                     Обработка администратором
                                 {% endif %}
                             </th>
-                            <th>{{ other_application.created_at|default:"None" }}</th>
-                            <th>{{ other_application.taken_time|default:"None" }}</th>
-                            <th>{{ other_application.completed_time|default:"None" }}</th>
+                            <th>{{ other_application.created_at|localtime|default:"None" }}</th>
+                            <th>{{ other_application.taken_time|localtime|default:"None" }}</th>
+                            <th>{{ other_application.completed_time|localtime|default:"None" }}</th>
                             <th>{% if other_application.receipt_link %}<a href="{{ other_application.receipt_link }}" target="_blank">Ссылка</a>{% else %}None{% endif %}</th>
 
                         </tr>

@@ -1,3 +1,4 @@
+{% load tz %}
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
@@ -130,7 +131,7 @@
                         <tr>
                             <th>{{ withdrawal.id }}</th>
                             <th>{{ withdrawal.request_date }}</th>
-                            <th>{{ withdrawal.execution_date|default:"None" }}</th>
+                            <th>{{ withdrawal.execution_date|localtime|default:"None" }}</th>
 
                             <!-- Применение классов цвета в зависимости от статуса -->
                             <th class="{% if withdrawal.status == 'processing' %}y{% elif withdrawal.status == 'canceled' %}r{% elif withdrawal.status == 'completed' %}g{% endif %}">

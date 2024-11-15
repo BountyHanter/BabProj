@@ -4,6 +4,7 @@ from django.http import HttpResponseRedirect
 from database.views.media import protected_media
 from main_site.services.confirm_application_logic import confirm_application
 from main_site.services.take_application_logic import take_application
+from main_site.test_csrf import test_csrf
 from main_site.utils.save_receipt_file import upload_receipt
 from main_site.utils.send_problem_data import report_problem
 from main_site.utils.send_request_withdrawal import request_withdrawal
@@ -41,6 +42,7 @@ urlpatterns = [
     path('media/<path:path>/', protected_media, name='protected_media'),
 
     path('merchant_generate_report/', merchant_generate_report, name='m_generate_report'),
+    path('test-csrf/', test_csrf, name='test_csrf'),
 
 ]
 

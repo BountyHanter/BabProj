@@ -28,7 +28,7 @@ def merchant_dashboard(request):
     context = {
         'total_amount': calculate_total_amount(),
         'bybit_price': get_bybit_price(),
-        'merchant_balance': request.user.profile.earnings,
+        'merchant_balance': request.user.profile.merchant_balance,
         'applications': applications_page,
         'total_pages': total_pages,
         'current_page': page_number,

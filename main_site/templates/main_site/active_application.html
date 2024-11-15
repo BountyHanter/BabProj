@@ -144,7 +144,8 @@
         <div class="modal modal_send_check" id="problemModal">
             <div class="modal_content">
                 <button class="close" onclick="closeModal()"><img src="{% static 'img/close.svg' %}"></button>
-                <div class="modal_title">Сообщите о проблеме для заявки ID: {{ active_application.id }}</div>
+                <!-- Здесь заголовок будет обновляться через JavaScript -->
+                <div class="modal_title">Сообщите о проблеме для заявки ID: </div>
                 <div class="modal_title_sub">Выберите причину проблемы:</div>
                 <label class="select_label">
                     <select id="problemSelect">
@@ -152,9 +153,11 @@
                         <option value="Проблемы с отправлением платежа">Проблемы с отправлением платежа</option>
                     </select>
                 </label>
-                <a class="btn_b" onclick="reportProblem({{ active_application.id }})">Сообщить о проблеме</a>
+                <!-- Кнопка не принимает ID, он передаётся динамически -->
+                <a class="btn_b" onclick="reportProblem()">Сообщить о проблеме</a>
             </div>
         </div>
+
 
         <div id="copy-notification" style="display: none;">Данные скопированы!</div>
         <div id="notification-container"></div>

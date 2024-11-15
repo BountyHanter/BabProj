@@ -1,3 +1,4 @@
+{% load tz %}
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
@@ -110,9 +111,9 @@
                                         Обработка администратором
                                     {% endif %}
                                 </td>
-                                <td>{{ application.created_at|date:"d.m.Y H:i" }}</td>
-                                <td>{% if application.taken_time %}{{ application.taken_time|date:"d.m.Y H:i" }}{% else %}None{% endif %}</td>
-                                <td>{% if application.completed_time %}{{ application.completed_time|date:"d.m.Y H:i" }}{% else %}None{% endif %}</td>
+                                <td>{{ application.created_at|localtime|date:"d.m.Y H:i" }}</td>
+                                <td>{% if application.taken_time %}{{ application.taken_time|localtime|date:"d.m.Y H:i" }}{% else %}None{% endif %}</td>
+                                <td>{% if application.completed_time %}{{ application.completed_time|localtime|date:"d.m.Y H:i" }}{% else %}None{% endif %}</td>
                                 <td>{% if application.receipt_link %}<a href="{{ application.receipt_link }}" target="_blank">Ссылка</a>{% else %}None{% endif %}</td>
                             </tr>
                             {% empty %}

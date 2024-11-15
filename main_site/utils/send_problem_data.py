@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_protect
@@ -7,6 +8,7 @@ from main_site.utils.telegram_api import send_problem_data
 
 
 @csrf_protect
+@transaction.atomic
 def report_problem(request):
     if request.method == 'POST':
         try:
@@ -26,12 +28,15 @@ def report_problem(request):
             # Меняем статус заявки на 'manual' и записываем проблему
             application.status = 'manual'
             application.problem = problem
+            print(f"Перед сохранением: status={application.status}, problem={application.problem}")
             application.save()
+            print("Сохранение завершено")
+            print(application.status)
 
-            # Отправляем данные через send_application_data
-            result, error = send_problem_data(application_id)
-            if error:
-                return JsonResponse({"error": error}, status=400)
+            # # # Отправляем данные через send_application_data
+            # result, error = send_problem_data(application_id)
+            # if error:
+            #     return JsonResponse({"error": error}, status=400)
 
             # Возвращаем успешный ответ
             return JsonResponse({

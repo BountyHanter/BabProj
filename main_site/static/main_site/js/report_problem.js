@@ -1,4 +1,11 @@
 function openModal() {
+    // Получаем ID заявки из скрытого поля
+    const applicationId = document.getElementById('application_id').value;
+
+    // Обновляем содержимое заголовка в модальном окне
+    const modalTitle = document.querySelector('.modal_title');
+    modalTitle.textContent = `Сообщите о проблеме для заявки ID: ${applicationId}`;
+
     document.getElementById('problemModal').classList.add('show');
 }
 
@@ -6,8 +13,14 @@ function closeModal() {
     document.getElementById('problemModal').classList.remove('show');
 }
 
-function reportProblem(applicationId) {
-    const problem = $('#problemSelect').val(); // Получаем выбранную проблему
+function reportProblem() {
+    // Получаем ID заявки из скрытого поля
+    const applicationId = document.getElementById('application_id').value;
+
+    // Получаем выбранную проблему из селектора
+    const problem = document.getElementById('problemSelect').value;
+
+    // Получаем CSRF-токен из cookie
     const csrfToken = getCookie('csrftoken');
 
     // Проверка, что выбрана проблема
