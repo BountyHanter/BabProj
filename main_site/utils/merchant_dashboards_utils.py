@@ -42,9 +42,9 @@ def get_applications_data(applications_page):
             'from_bank': app.from_bank,  # Оставляем None, если поле пустое
             'status': app.status,
             'status_display': app.get_status_display(),  # Отображение статуса
-            'created_at': format(app.created_at, "d.m.Y H:i") if app.created_at else None,
-            'taken_time': format(app.taken_time, "d.m.Y H:i") if app.taken_time else None,
-            'completed_time': format(app.completed_time, "d.m.Y H:i") if app.completed_time else None,
+            'created_at': app.created_at,
+            'taken_time': app.taken_time,
+            'completed_time': app.completed_time,
             'receipt_link': app.receipt_link,
         }
         for app in applications_page

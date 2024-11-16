@@ -19,7 +19,7 @@ from main_site.utils.get_banks import get_bank_by_name
 from main_site.utils.telegram_api import send_application_data
 
 load_dotenv()
-MEDIA_SERVER_URL = 'https://media.babdata.cloud/upload/'  # URL для загрузки файла на удалённый сервер
+MEDIA_SERVER_URL = 'https://media.babdata.cloud/upload_reciept/'  # URL для загрузки файла на удалённый сервер
 
 
 @csrf_protect

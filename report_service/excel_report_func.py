@@ -3,23 +3,24 @@ import json
 from datetime import datetime
 
 import pytz
+import requests
 from celery import shared_task
 from pathlib import Path
-from django.http import HttpResponse
 from django.utils import timezone
-from django.conf import settings
 from dotenv import load_dotenv
 from openpyxl import Workbook
 from io import BytesIO
 from database.models import Application
 from database.models.excel_reports import Report
 
+MEDIA_SERVER_URL = 'https://media.babdata.cloud/upload_report/'  # URL для загрузки файла на удалённый сервер
+
 load_dotenv()
 SITE_URL = os.getenv('SITE_URL')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-banks_path = os.path.join(BASE_DIR, 'main_site/../database/banks.json')
+banks_path = os.path.join(BASE_DIR, 'database/banks.json')
 
 # Чтение банков из файла
 with open(banks_path, 'r', encoding='utf-8') as file:
@@ -48,8 +49,6 @@ def generate_excel_report(request, filter_data, type_user):
         applications = applications.filter(executor=request.user)
     elif type_user == 'Merchant':
         applications = applications.filter(merchant=request.user)
-
-    print(request.user)
 
     # Функция для преобразования строки в дату
     def parse_date(date_str):
@@ -135,29 +134,53 @@ def generate_excel_report(request, filter_data, type_user):
         ]
         ws.append(row)
 
-    # Сохраняем файл в памяти
+    # Сохраняем файл в память
     output = BytesIO()
-    wb.save(output)
+    try:
+        wb.save(output)
+    except Exception as e:
+        print(f"Ошибка при сохранении файла в память: {str(e)}")
+        raise
+
     output.seek(0)
 
-    # Путь для сохранения файла на сервере
+    # Генерируем имя файла отчета
     report_name = f"report_{timezone.now().strftime('%Y%m%d%H%M%S')}.xlsx"
-    report_path = os.path.join(settings.MEDIA_ROOT, 'reports', report_name)
 
-    os.makedirs(os.path.dirname(report_path), exist_ok=True)
-    wb.save(report_path)
+    # Подготовка файла для отправки
+    files = {
+        'report': (report_name, output.read(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    }
 
-    report_link = f'/media/reports/{report_name}'
+    # Отправляем отчет на удаленный сервер
+    try:
+        response = requests.post(MEDIA_SERVER_URL, files=files)
+    except Exception as e:
+        print(f"Ошибка при отправке файла на сервер: {str(e)}")
+        raise
 
-    report = Report.objects.create(
-        user=request.user,
-        report_link=report_link,
-        application_count=applications.count()
-    )
+    if response.status_code != 200:
+        print(f"Ошибка от сервера: {response.status_code} - {response.text}")
+        raise Exception("Ошибка загрузки файла отчета на удаленный сервер")
 
-    response = HttpResponse(output, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = f'attachment; filename={report_name}'
+    # Получаем URL загруженного файла и сохраняем только относительный путь
+    file_url = response.json().get('file_url')
 
-    return f'{SITE_URL}{report_link}'
+    relative_file_url = file_url.replace('http://147.45.245.11', '')
 
+    # Создаем запись отчета в базе данных
+    try:
+        report = Report.objects.create(
+            user=request.user,
+            report_link=relative_file_url,
+            application_count=applications.count()
+        )
+    except Exception as e:
+        print(f"Ошибка при сохранении отчета в базе данных: {str(e)}")
+        raise
+
+    # Возвращаем ссылку на файл
+    result_link = f'{SITE_URL}{relative_file_url}'
+
+    return result_link
 

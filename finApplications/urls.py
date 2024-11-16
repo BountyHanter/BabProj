@@ -17,19 +17,19 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from django.conf import settings
-from django.conf.urls.static import static
-
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
 
 from database.views.auth import user_login
 from main_site.views.merchant_dashboard import merchant_dashboard
 
+# Обработчики ошибок
+from finApplications.error_pages import custom_404_view, custom_500_view
+
 urlpatterns = [
     path('Yay2tieW/', admin.site.urls),
 
-    #path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
     path('api/', include('database.urls')),
     path('', include('main_site.urls')),
 
@@ -39,11 +39,8 @@ urlpatterns = [
 
     # Статистика для мерчантов
     path('statistics/', merchant_dashboard, name='merchant_dashboard'),
-
-    path('data/', TemplateView.as_view(template_name='main_site/tg.html'), name='index'),
-
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
+# Обработчики ошибок
+handler404 = 'finApplications.error_pages.custom_404_view'
+handler500 = 'finApplications.error_pages.custom_500_view'

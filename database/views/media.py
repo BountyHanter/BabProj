@@ -1,26 +1,17 @@
-import os
-
-import requests
+from django.http import HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
-from django.http import FileResponse, HttpResponse, Http404
-
-from finApplications import settings
-
+import requests
+import os
 
 @login_required
 def protected_media(request, path):
-    # Путь к локальному файлу
-    media_path = os.path.join(settings.MEDIA_ROOT, path)
-
-    # Проверяем, есть ли файл на локальном сервере
-    if os.path.exists(media_path):
-        return FileResponse(open(media_path, 'rb'))
-
-    # Если файл отсутствует на локальном сервере, запрашиваем его на удалённом
+    # Запрашиваем файл на удалённом сервере
     media_url = f'https://media.babdata.cloud/media/{path}'
-    response = requests.get(media_url)
+    response = requests.get(media_url, stream=True)  # stream=True для больших файлов
 
     if response.status_code == 200:
-        return HttpResponse(response.content, content_type=response.headers['Content-Type'])
+        # Возвращаем файл напрямую из ответа удалённого сервера
+        return HttpResponse(response.raw, content_type=response.headers.get('Content-Type', 'application/octet-stream'))
     else:
+        # Если файл не найден на удалённом сервере
         raise Http404("Файл не найден.")

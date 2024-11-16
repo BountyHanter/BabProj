@@ -35,9 +35,9 @@ def get_other_applications_data(applications_page):
             'to_bank': application.to_bank,
             'from_bank': application.from_bank,
             'status': application.status,
-            'created_at': format(application.created_at, "d.m.Y H:i") if application.created_at else None,
-            'taken_time': format(application.taken_time, "d.m.Y H:i") if application.taken_time else None,
-            'completed_time': format(application.completed_time, "d.m.Y H:i") if application.completed_time else None,
+            'created_at': application.created_at,
+            'taken_time': application.taken_time,
+            'completed_time': application.completed_time,
             'receipt_link': application.receipt_link
         }
         for application in applications_page

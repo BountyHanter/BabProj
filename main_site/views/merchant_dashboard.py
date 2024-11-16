@@ -23,6 +23,8 @@ def merchant_dashboard(request):
 
     # Данные заявок
     applications_data = get_applications_data(applications_page)
+    print(applications_data)
+
 
     # Контекст для шаблона
     context = {

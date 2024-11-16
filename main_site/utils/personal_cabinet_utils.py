@@ -37,8 +37,8 @@ def get_withdrawal_requests_data(withdrawals_page):
             'amount': f"{withdrawal.amount:.2f}",  # Форматируем с двумя знаками после запятой
             'status': withdrawal.status,
             'status_display': withdrawal.get_status_display(),  # Отображение статуса
-            'request_date': format(withdrawal.request_date, "d.m.Y H:i") if withdrawal.request_date else None,
-            'execution_date': format(withdrawal.execution_date, "d.m.Y H:i") if withdrawal.execution_date else None,
+            'request_date': withdrawal.request_date,
+            'execution_date': withdrawal.execution_date,
             'transaction_hash': withdrawal.transaction_hash,
         }
         for withdrawal in withdrawals_page
