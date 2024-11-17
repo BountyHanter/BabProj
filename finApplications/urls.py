@@ -26,6 +26,12 @@ from main_site.views.merchant_dashboard import merchant_dashboard
 # Обработчики ошибок
 from finApplications.error_pages import custom_404_view, custom_500_view
 
+
+# Обработчики ошибок
+handler404 = 'finApplications.error_pages.custom_404_view'
+handler500 = 'finApplications.error_pages.custom_500_view'
+
+
 urlpatterns = [
     path('Yay2tieW/', admin.site.urls),
 
@@ -40,7 +46,3 @@ urlpatterns = [
     # Статистика для мерчантов
     path('statistics/', merchant_dashboard, name='merchant_dashboard'),
 ]
-
-# Обработчики ошибок
-handler404 = 'finApplications.error_pages.custom_404_view'
-handler500 = 'finApplications.error_pages.custom_500_view'

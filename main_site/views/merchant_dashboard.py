@@ -4,7 +4,7 @@ from django.shortcuts import render
 from database.models.application import Application
 from finApplications.ByBit_utils import get_bybit_price
 from main_site.utils.merchant_dashboards_utils import filter_applications, get_applications_data
-from main_site.utils.paginate_utils import paginate_queryset, paginate_with_range
+from main_site.utils.paginate_utils import paginate_with_range
 from main_site.utils.total_amount import calculate_total_amount
 
 

@@ -70,3 +70,51 @@ class BankSelectionWidget(forms.Widget):
             except json.JSONDecodeError:
                 return []
         return []
+
+
+class BalanceAdjustmentWidget(forms.Widget):
+    def render(self, name, value, attrs=None, renderer=None):
+        if value is None:
+            value = 0  # Устанавливаем баланс по умолчанию
+        if attrs is None:
+            attrs = {}
+        final_attrs = self.build_attrs(attrs, extra_attrs={'name': name})
+        id_ = final_attrs.get('id', 'id_%s' % name)
+        safe_id = id_.replace('-', '_')  # Убираем дефисы
+
+        html = f"""
+        <div id="{id_}_balance-adjustment">
+            <input type="number" id="{id_}_current-balance" value="{value}" readonly>
+            <input type="number" id="{id_}_change-amount" placeholder="Введите сумму">
+            <button type="button" onclick="increaseBalance_{safe_id}()">+</button>
+            <button type="button" onclick="decreaseBalance_{safe_id}()">-</button>
+            <input type="hidden" name="{name}" id="{id_}" value="{value}">
+        </div>
+
+        <script>
+        function increaseBalance_{safe_id}() {{
+            var changeAmount = parseFloat(document.getElementById("{id_}_change-amount").value) || 0;
+            var currentBalance = parseFloat(document.getElementById("{id_}_current-balance").value) || 0;
+            document.getElementById("{id_}_current-balance").value = (currentBalance + changeAmount).toFixed(2);
+            document.getElementById("{id_}").value = (currentBalance + changeAmount).toFixed(2);
+        }}
+
+        function decreaseBalance_{safe_id}() {{
+            var changeAmount = parseFloat(document.getElementById("{id_}_change-amount").value) || 0;
+            var currentBalance = parseFloat(document.getElementById("{id_}_current-balance").value) || 0;
+            document.getElementById("{id_}_current-balance").value = (currentBalance - changeAmount).toFixed(2);
+            document.getElementById("{id_}").value = (currentBalance - changeAmount).toFixed(2);
+        }}
+        </script>
+        """
+
+        return mark_safe(html)
+
+    def value_from_datadict(self, data, files, name):
+        value = data.get(name)
+        if value:
+            try:
+                return float(value)
+            except ValueError:
+                return 0
+        return 0

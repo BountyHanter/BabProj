@@ -3,7 +3,7 @@ import json
 from django.contrib import admin
 from django import forms
 
-from database.admin_custom.widget import BankSelectionWidget
+from database.admin_custom.widgets import BankSelectionWidget, BalanceAdjustmentWidget
 from database.models.user_profile import UserProfile
 
 
@@ -13,10 +13,18 @@ class UserProfileAdminForm(forms.ModelForm):
         model = UserProfile
         fields = '__all__'
 
+    # Виджет для банков
     recipients_bank = forms.Field(
         required=False,
         label='Банки для перевода',
         widget=BankSelectionWidget()
+    )
+
+    # Виджет для баланса
+    merchant_balance = forms.DecimalField(
+        required=False,
+        widget=BalanceAdjustmentWidget(),  # Новый виджет для merchant_balance
+        label="Баланс мерчанта"
     )
 
     def clean_recipients_bank(self):
