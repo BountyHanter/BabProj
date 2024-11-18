@@ -3,7 +3,8 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from database.models.application import Application
 from finApplications.ByBit_utils import get_bybit_price
-from main_site.utils.merchant_dashboards_utils import filter_applications, get_applications_data
+from main_site.utils.merchant_dashboards_utils import filter_applications, get_applications_data, \
+    get_ajax_applications_data
 from main_site.utils.paginate_utils import paginate_with_range
 from main_site.utils.total_amount import calculate_total_amount
 
@@ -20,10 +21,11 @@ def merchant_dashboard(request):
 
     # Используем функцию для пагинации и получения диапазона страниц
     applications_page, page_range, total_pages = paginate_with_range(applications, page_number, rows_per_page)
-
-    # Данные заявок
-    applications_data = get_applications_data(applications_page)
-    print(applications_data)
+    #
+    # # Данные заявок
+    # applications_data = get_applications_data(applications_page)
+    # print(applications_data)
+    print(get_ajax_applications_data(applications_page))
 
 
     # Контекст для шаблона
@@ -41,7 +43,7 @@ def merchant_dashboard(request):
     # Проверка на AJAX-запрос
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
-            'applications': applications_data,
+            'applications': get_ajax_applications_data(applications_page),
             'total_pages': total_pages,
             'current_page': page_number,
             'rows_per_page': rows_per_page,

@@ -60,9 +60,14 @@ class WithdrawalRequest(models.Model):
                 user_profile.earnings += self.amount
                 user_profile.save()
 
+
         # Устанавливаем время исполнения, если статус изменяется на 'completed' или 'canceled'
-        if self.status in ['completed', 'canceled']:
-            self.execution_date = timezone.now()
+        if self.pk:  # Если объект не новый
+            from_db = self.__class__.objects.filter(pk=self.pk).only('execution_date').first()
+            # Если execution_date в базе пустое, а также в текущем объекте, устанавливаем дату
+            if from_db and from_db.execution_date is None and self.execution_date is None:
+                if self.status in ['completed', 'canceled']:
+                    self.execution_date = timezone.now()
 
         # Вызов оригинального метода save для сохранения изменений
         super().save(*args, **kwargs)

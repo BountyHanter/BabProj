@@ -81,11 +81,11 @@
                     <div class="bank_report">
                         <div>
                             <label class="title checkbox_label">
-                                <input type="checkbox" name="bank_sender_checkbox" class="toggle-input">
+                                <input type="checkbox" name="from_bank_checkbox" class="toggle-input">
                                 <span></span> Выберите банк отправителя<br>
                             </label>
                             <label class="select_label">
-                                <select name="bank_sender" class="toggle-field" disabled>
+                                <select name="from_bank" class="toggle-field" disabled>
                                     <option>Любой (по умолчанию)</option>
                                     {% for bank in banks %}
                                         <option value="{{ bank }}">{{ bank }}</option>
@@ -95,11 +95,11 @@
                         </div>
                         <div>
                             <label class="title checkbox_label">
-                                <input type="checkbox" name="bank_receiver_checkbox" class="toggle-input">
+                                <input type="checkbox" name="to_bank_checkbox" class="toggle-input">
                                 <span></span> Выберите банк получателя<br>
                             </label>
                             <label class="select_label">
-                                <select name="bank_receiver" class="toggle-field" disabled>
+                                <select name="to_bank" class="toggle-field" disabled>
                                     <option>Любой (по умолчанию)</option>
                                     {% for bank in banks %}
                                         <option value="{{ bank }}">{{ bank }}</option>

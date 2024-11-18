@@ -12,7 +12,6 @@ from main_site.utils.paginate_utils import paginate_with_range
 from main_site.utils.user_applications_utils import search_other_applications, get_other_applications_data
 
 
-
 @csrf_protect
 @login_required
 def user_applications_view(request):
@@ -31,7 +30,8 @@ def user_applications_view(request):
     page_number = int(request.GET.get('page', 1) or 1)
 
     # Используем функцию для пагинации и получения диапазона страниц
-    other_applications_page, page_range, total_pages = paginate_with_range(other_applications, page_number, rows_per_page)
+    other_applications_page, page_range, total_pages = paginate_with_range(other_applications, page_number,
+                                                                           rows_per_page)
 
     # Данные заявок
     other_applications_data = get_other_applications_data(other_applications_page)
@@ -84,7 +84,6 @@ def active_application_view(request):
         return render(request, 'main_site/partials/active_application_main_header.html', context)
 
     return render(request, 'main_site/active_application.html', context)
-
 
 # @login_required
 # def get_application_info(request):

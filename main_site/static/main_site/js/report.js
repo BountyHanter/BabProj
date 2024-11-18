@@ -62,10 +62,10 @@ $(document).ready(function() {
         addFieldIfCheckedAndNotEmpty('input[name="date_created_checkbox"]', 'input[name="date_created_to"]', 'date_created_to');
         addFieldIfCheckedAndNotEmpty('input[name="date_completed_checkbox"]', 'input[name="date_completed_from"]', 'date_completed_from');
         addFieldIfCheckedAndNotEmpty('input[name="date_completed_checkbox"]', 'input[name="date_completed_to"]', 'date_completed_to');
-        addFieldIfCheckedAndNotEmpty('input[name="transaction_type_checkbox"]', 'select[name="transaction_type"]', 'transaction_type');
+        addFieldIfCheckedAndNotEmpty('input[name="type_checkbox"]', 'select[name="type"]', 'type'); // Изменено с transaction_type_checkbox
         addFieldIfCheckedAndNotEmpty('input[name="status_checkbox"]', 'select[name="status"]', 'status');
-        addFieldIfCheckedAndNotEmpty('input[name="bank_sender_checkbox"]', 'select[name="bank_sender"]', 'bank_sender');
-        addFieldIfCheckedAndNotEmpty('input[name="bank_receiver_checkbox"]', 'select[name="bank_receiver"]', 'bank_receiver');
+        addFieldIfCheckedAndNotEmpty('input[name="from_bank_checkbox"]', 'select[name="from_bank"]', 'from_bank'); // Изменено с bank_sender_checkbox
+        addFieldIfCheckedAndNotEmpty('input[name="to_bank_checkbox"]', 'select[name="to_bank"]', 'to_bank');   // Изменено с bank_receiver_checkbox
         addFieldIfCheckedAndNotEmpty('input[name="amount_from_checkbox"]', 'input[name="amount_from"]', 'amount_from');
         addFieldIfCheckedAndNotEmpty('input[name="amount_to_checkbox"]', 'input[name="amount_to"]', 'amount_to');
 

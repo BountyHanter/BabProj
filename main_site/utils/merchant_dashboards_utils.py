@@ -1,5 +1,6 @@
 from datetime import datetime
 import pytz
+from django.utils.timezone import localtime
 
 
 def filter_applications(request, applications):
@@ -44,4 +45,34 @@ def get_applications_data(applications_page):
             'receipt_link': app.receipt_link,
         }
         for app in applications_page
+    ]
+
+
+# Сори я устал
+def get_ajax_applications_data(applications):
+    STATUS_TEXT = {
+        'new': 'Новая',
+        'active': 'Взята',
+        'processing': 'В обработке',
+        'completed': 'Завершена',
+        'canceled': 'Отклонена',
+        'manual': 'Обработка администратором',
+    }
+
+    return [
+        {
+            'id': app.id,
+            'type': app.type,
+            'amount': str(app.amount),  # Преобразуем Decimal в строку
+            'payment_details': app.payment_details,
+            'to_bank': app.to_bank,
+            'from_bank': app.from_bank,
+            'status': app.status,
+            'status_display': STATUS_TEXT.get(app.status, 'Неизвестно'),  # Человеко-читаемый статус
+            "created_at": localtime(app.created_at).strftime("%d.%m.%Y %H:%M"),
+            "taken_time": localtime(app.taken_time).strftime("%d.%m.%Y %H:%M") if app.taken_time else None,
+            "completed_time": localtime(app.completed_time).strftime("%d.%m.%Y %H:%M") if app.completed_time else None,
+            'receipt_link': app.receipt_link,
+        }
+        for app in applications
     ]

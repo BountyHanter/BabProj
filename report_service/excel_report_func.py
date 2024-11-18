@@ -33,6 +33,8 @@ def generate_excel_report(request, filter_data, type_user):
     ws = wb.active
     ws.title = "Отчёт"
 
+    print(filter_data)
+
     # Заголовки столбцов
     headers = ['ID заявки', 'Дата создания', 'Дата исполнения', 'Тип заявки', 'Реквизиты', 'Исполнитель', 'Сумма', 'Валюта',
                'Статус', 'Банк получателя', 'Банк отправителя', 'Курс на момент исполнения',
@@ -87,12 +89,11 @@ def generate_excel_report(request, filter_data, type_user):
         applications = applications.filter(status=filter_data['status'])
 
     # Фильтрация по банку отправителя
-    if filter_data.get('bank_sender'):
-        applications = applications.filter(from_bank=filter_data['bank_sender'])
+    if filter_data.get('from_bank'):
+        applications = applications.filter(from_bank=filter_data['from_bank'])
 
-    # Фильтрация по банку получателя
-    if filter_data.get('bank_receiver'):
-        applications = applications.filter(to_bank=filter_data['bank_receiver'])
+    if filter_data.get('to_bank'):
+        applications = applications.filter(to_bank=filter_data['to_bank'])
 
     # Фильтрация по суммам
     if filter_data.get('amount_from'):
@@ -128,7 +129,7 @@ def generate_excel_report(request, filter_data, type_user):
             app.rate_after_fee,
             app.percentage,
             app.net_amount_in_usdt,
-            f'{SITE_URL}{app.receipt_link}',
+            f'{SITE_URL}{app.receipt_link}' if app.receipt_link else '',
         ]
         ws.append(row)
 

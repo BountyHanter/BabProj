@@ -17,21 +17,22 @@
 
 .tooltip-text {
     visibility: hidden;
-    width: max-content;
-    max-width: 300px; /* Ограничиваем ширину */
+    font-size: 20px; /* Уменьшаем шрифт */
+    max-width: 200px; /* Ограничиваем максимальную ширину */
     background-color: #555;
     color: #fff;
     text-align: center;
     border-radius: 5px;
     padding: 5px;
     position: absolute;
-    z-index: 1;
-    top: 150%; /* Расположить под элементом */
+    z-index: 10; /* Убедитесь, что значение выше, чем у других элементов */
+    top: 100%; /* Расположить под элементом */
     left: 50%;
     transform: translateX(-50%);
     opacity: 0;
     transition: opacity 0.3s;
-    white-space: nowrap;
+    word-wrap: break-word; /* Перенос слов */
+    white-space: normal; /* Позволяет перенос строк */
 }
 
 .tooltip:hover .tooltip-text {
@@ -139,9 +140,12 @@
                     <span>Мои запросы на вывод средств</span>
                     <div class="filter-container" style="display: inline-flex; align-items: center; gap: 10px;">
                         <label class="input_date_on_placeholder">
-                            <input id="date_withdrawal" placeholder="Выбрать период:" type="text"
-                                   onfocus="this.type='date'"
-                                   onblur="if(this.value==''){this.type='text'}"/>
+                            <div class="tooltip">
+                                <input id="date_withdrawal" placeholder="Выбрать период:" type="text"
+                                       onfocus="this.type='date'"
+                                       onblur="if(this.value==''){this.type='text'}"/>
+                                <div class="tooltip-text">Крайняя дата исполнения вывода</div>
+                            </div>
                         </label>
                         <a class="btn_b filter_btn" style="cursor: pointer;" onclick="filterWithdrawals()">Фильтровать</a>
                     </div>
