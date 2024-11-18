@@ -1,11 +1,12 @@
 import time
 from datetime import datetime
+from pathlib import Path
+
 import requests
 import json
 import os
 
-from finApplications.settings import BASE_DIR
-
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 def save_to_json(filename, data):
     # Если файла нет, создаем его и записываем данные
