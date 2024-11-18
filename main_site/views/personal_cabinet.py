@@ -1,19 +1,16 @@
-import os
 from datetime import datetime
 import pytz
 
-from dotenv import load_dotenv
 from django.db.models import Sum
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
-from finApplications.ByBit_utils import get_bybit_price
+from finApplications.ByBit_utils import get_bybit_price, get_bybit_time
+from finApplications.globals import DOMAIN
 from main_site.utils.paginate_utils import paginate_with_range
 from main_site.utils.personal_cabinet_utils import get_completed_applications, get_withdrawal_requests, \
     get_withdrawal_requests_data
 
-load_dotenv()
-DOMAIN = os.getenv('DOMAIN')
 MOSCOW_TZ = pytz.timezone("Europe/Moscow")
 
 @login_required
@@ -50,6 +47,7 @@ def personal_cabinet(request):
 
     context = {
         'bybit_price': get_bybit_price(),
+        'bybit_time': get_bybit_time(),
         'username': username,
         'is_active': is_active,
         'balance': balance,

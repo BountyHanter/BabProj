@@ -5,21 +5,19 @@ from datetime import datetime
 import pytz
 import requests
 from celery import shared_task
-from pathlib import Path
 from django.utils import timezone
 from dotenv import load_dotenv
 from openpyxl import Workbook
 from io import BytesIO
 from database.models import Application
 from database.models.excel_reports import Report
-
-MEDIA_SERVER_URL = 'https://media.babdata.cloud/upload_report/'  # URL для загрузки файла на удалённый сервер
+from finApplications.globals import SITE_URL, MEDIA_SERVER_REPORTS_URL, MEDIA_IP_URL
+from finApplications.settings import BASE_DIR
 
 load_dotenv()
-SITE_URL = os.getenv('SITE_URL')
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
 banks_path = os.path.join(BASE_DIR, 'database/banks.json')
 
 # Чтение банков из файла
@@ -154,7 +152,7 @@ def generate_excel_report(request, filter_data, type_user):
 
     # Отправляем отчет на удаленный сервер
     try:
-        response = requests.post(MEDIA_SERVER_URL, files=files)
+        response = requests.post(MEDIA_SERVER_REPORTS_URL, files=files)
     except Exception as e:
         print(f"Ошибка при отправке файла на сервер: {str(e)}")
         raise
@@ -166,7 +164,7 @@ def generate_excel_report(request, filter_data, type_user):
     # Получаем URL загруженного файла и сохраняем только относительный путь
     file_url = response.json().get('file_url')
 
-    relative_file_url = file_url.replace('http://147.45.245.11', '')
+    relative_file_url = file_url.replace(MEDIA_IP_URL, '')
 
     # Создаем запись отчета в базе данных
     try:

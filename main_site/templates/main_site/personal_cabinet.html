@@ -10,6 +10,36 @@
         <meta name="keywords" content="">
         <link rel="icon" type="image/x-icon" href="{% static 'favicon.png' %}">
         <style>
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    width: max-content;
+    max-width: 300px; /* Ограничиваем ширину */
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    top: 150%; /* Расположить под элементом */
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+
 /* Контейнер для уведомлений */
 #notification-container {
     position: fixed;
@@ -222,6 +252,7 @@
         <script>
             const WithdrawalRequestUrl = "{% url 'request_withdrawal' %}";
         </script>
+        <script src="{% static 'main_site/js/request_withdrawal.js' %}"></script>
         <script>
             document.getElementById('filter_button').addEventListener('click', function () {
                 const dateValue = document.getElementById('date_application').value;
@@ -237,7 +268,6 @@
                 // Перенаправляем на обновленный URL
                 window.location.href = url.toString();
             });
-
         </script>
         <script>
             function filterWithdrawals() {
@@ -264,60 +294,6 @@
                 url.searchParams.set('page', 1);  // Сбрасываем на первую страницу
                 window.location.href = url.toString();
             }
-
         </script>
-        <script>
-            // Открытие модального окна
-            function openModal() {
-                document.querySelector('.modal_request_withdrawal').style.display = 'block';
-            }
-
-            // Закрытие модального окна
-            function closeModal() {
-                document.querySelector('.modal_request_withdrawal').style.display = 'none';
-            }
-
-            // Отправка запроса на вывод
-            function submitWithdrawalRequest() {
-                const amountInput = document.getElementById("withdrawal-amount");
-                const errorMessage = document.getElementById("error-message");
-                const amount = parseFloat(amountInput.value);
-
-                // Проверка на минимальную сумму
-                if (isNaN(amount) || amount < 100) {
-                    errorMessage.style.display = 'block';
-                    return;
-                } else {
-                    errorMessage.style.display = 'none';
-                }
-
-                // Отправка запроса на сервер
-                fetch(WithdrawalRequestUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken'),  // CSRF-токен
-                    },
-                    body: JSON.stringify({ amount: amount })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showMessage("Запрос на вывод успешно создан", 'success');
-                        closeModal();
-                        // Перезагрузка страницы через 5 секунд
-                        setTimeout(function() {
-                            location.reload();
-                        }, 2000);
-                    } else {
-                        showMessage("Ошибка: " + data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    showMessage("Ошибка при отправке запроса: " + error, 'error');
-                });
-            }
-        </script>
-
     </body>
 </html>

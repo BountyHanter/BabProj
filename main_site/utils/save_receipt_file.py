@@ -1,26 +1,15 @@
-import os
-import time
-
-from django.template.loader import render_to_string
-from dotenv import load_dotenv
 import requests
 
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_protect
-from django.core.files.storage import default_storage, FileSystemStorage
-from django.core.files.base import ContentFile
 
 
 from database.models.application import Application
-from finApplications import settings
+from finApplications.globals import MEDIA_SERVER_RECEIPT_URL, MEDIA_IP_URL
 from main_site.utils.generate_fiilename_and_valid_file import generate_unique_filename, is_valid_file_type
 from main_site.utils.get_banks import get_bank_by_name
 from main_site.utils.telegram_api import send_application_data
-
-load_dotenv()
-MEDIA_SERVER_URL = 'https://media.babdata.cloud/upload_reciept/'  # URL для загрузки файла на удалённый сервер
-
 
 @csrf_protect
 def upload_receipt(request):
@@ -75,14 +64,14 @@ def upload_receipt(request):
             files = {
                 'receipt': (unique_filename, receipt_file.read(), receipt_file.content_type)
             }
-            response = requests.post(MEDIA_SERVER_URL, files=files)
+            response = requests.post(MEDIA_SERVER_RECEIPT_URL, files=files)
 
             if response.status_code != 200:
                 return JsonResponse({"error": "Ошибка загрузки файла на удалённый сервер"}, status=500)
 
             # Получаем URL загруженного файла и сохраняем только относительный путь
             file_url = response.json().get('file_url')
-            relative_file_url = file_url.replace('http://147.45.245.11', '')
+            relative_file_url = file_url.replace(MEDIA_IP_URL, '')
 
             # Обновляем данные заявки
             application.has_receipt = True

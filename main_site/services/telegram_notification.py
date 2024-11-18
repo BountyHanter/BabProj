@@ -1,13 +1,6 @@
-import os
 import requests
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
-TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
-TG_CHAT_ID = os.getenv("TG_CHAT_ID")
-API_URL = f'https://api.telegram.org/bot{TG_BOT_TOKEN}'
+from finApplications.globals import API_URL, TG_CHAT_ID
 
 
 def telegram_balance_warning(username, balance_below_zero=False):

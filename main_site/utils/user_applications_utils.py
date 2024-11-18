@@ -1,5 +1,4 @@
 from django.db.models import Q
-from django.utils.dateformat import format
 
 from database.models import Application
 
@@ -24,6 +23,7 @@ def search_other_applications(user, search_text=None):
     result = applications.filter(query)
 
     return result
+
 
 def get_other_applications_data(applications_page):
     return [

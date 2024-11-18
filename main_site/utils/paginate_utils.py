@@ -12,6 +12,7 @@ def paginate_queryset(queryset, page_number, rows_per_page):
 
     return page, paginator.num_pages
 
+
 def paginate_with_range(queryset, page_number=1, rows_per_page=15, max_pages_to_show=5):
     # Создаем объект пагинатора
     paginator = Paginator(queryset, rows_per_page)

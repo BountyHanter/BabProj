@@ -28,15 +28,12 @@ def report_problem(request):
             # Меняем статус заявки на 'manual' и записываем проблему
             application.status = 'manual'
             application.problem = problem
-            print(f"Перед сохранением: status={application.status}, problem={application.problem}")
             application.save()
-            print("Сохранение завершено")
-            print(application.status)
 
-            # # # Отправляем данные через send_application_data
-            # result, error = send_problem_data(application_id)
-            # if error:
-            #     return JsonResponse({"error": error}, status=400)
+            # # Отправляем данные через send_application_data
+            result, error = send_problem_data(application_id)
+            if error:
+                return JsonResponse({"error": error}, status=400)
 
             # Возвращаем успешный ответ
             return JsonResponse({

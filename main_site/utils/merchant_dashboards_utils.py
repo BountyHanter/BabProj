@@ -1,10 +1,6 @@
-import os
-
-from django.utils.dateformat import format
 from datetime import datetime
 import pytz
 
-SITE_URL = os.getenv('SITE_URL')
 
 def filter_applications(request, applications):
     # Фильтрация по статусу заявки

@@ -1,12 +1,11 @@
 import time
 from datetime import datetime
-from pathlib import Path
-
 import requests
 import json
 import os
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+from finApplications.settings import BASE_DIR
+
 
 def save_to_json(filename, data):
     # Если файла нет, создаем его и записываем данные
@@ -76,7 +75,7 @@ def get_average_price():
         print(f"Ошибка: {response.status_code}")
 
 
-def take_bybit_price():
+def take_bybit_data():
     file_path = os.path.join(BASE_DIR, "finApplications/average_price.json")
 
     with open(file_path, 'r') as file:

@@ -1,7 +1,3 @@
-import json
-import os
-from dotenv import load_dotenv
-
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -9,15 +5,12 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 
 from database.models.application import Application
-from finApplications.ByBit import take_bybit_price
 from finApplications.ByBit_utils import get_bybit_price
+from finApplications.globals import SITE_URL, WEBSOCKET_URL
 from main_site.utils.banks_name import get_bank_names
 from main_site.utils.paginate_utils import paginate_with_range
 from main_site.utils.user_applications_utils import search_other_applications, get_other_applications_data
 
-load_dotenv()
-SITE_URL = os.getenv('SITE_URL')
-DOMAIN = os.getenv('DOMAIN')
 
 
 @csrf_protect
@@ -83,7 +76,7 @@ def active_application_view(request):
         'active_application': active_application,
         'banks': get_bank_names(),
         'balance': balance,
-        'websocket_url': DOMAIN
+        'websocket_url': WEBSOCKET_URL
     }
 
     # Проверка на AJAX-запрос
@@ -93,16 +86,16 @@ def active_application_view(request):
     return render(request, 'main_site/active_application.html', context)
 
 
-@login_required
-def get_application_info(request):
-    application_id = request.GET.get('application_id')
-    application = get_object_or_404(Application, id=application_id, executor=request.user.id)
-
-    data = {
-        'status': application.status,
-        'type': application.type,
-        'amount': application.amount,
-        'payment_details': application.payment_details,
-        'receipt_link': f"{SITE_URL}{application.receipt_link}" if application.receipt_link else None,
-    }
-    return JsonResponse(data)
+# @login_required
+# def get_application_info(request):
+#     application_id = request.GET.get('application_id')
+#     application = get_object_or_404(Application, id=application_id, executor=request.user.id)
+#
+#     data = {
+#         'status': application.status,
+#         'type': application.type,
+#         'amount': application.amount,
+#         'payment_details': application.payment_details,
+#         'receipt_link': f"{SITE_URL}{application.receipt_link}" if application.receipt_link else None,
+#     }
+#     return JsonResponse(data)

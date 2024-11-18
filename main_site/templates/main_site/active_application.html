@@ -173,7 +173,7 @@
             const activeApplication = "{{ active_application }}";
             const reportProblemUrl = "{% url 'report_problem' %}";
             const uploadReceiptUrl = "{% url 'upload_receipt' %}";
-            const socketDomain = new WebSocket('ws://{{ websocket_url }}/ws/update/');
+            const socketDomain = new WebSocket('{{ websocket_url }}');
 
         </script>
         <script src="{% static 'main_site/js/take_application.js' %}"></script>

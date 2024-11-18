@@ -49,13 +49,13 @@ function reportProblem() {
                 showMessage("Проблема успешно зафиксирована.", 'success');
                 closeModal(); // Закрываем модальное окно
             } else if (response.error) {
-                showMessage("Ошибка: " + response.error, 'error');
+                showMessage("Возникла проблема, сообщите администрации. Ошибка(скопируйте её): " + response.error, 'error');
             } else {
-                showMessage("Подробности не доступны", 'error');
+                showMessage("Возникла проблема, сообщите администрации. Подробности не доступны", 'error');
             }
         },
         error: function(xhr, status, error) {
-            showMessage("Произошла ошибка: " + error, 'error');
+            showMessage("Возникла проблема, сообщите администрации. Ошибка(скопируйте её): " + error, 'error');
         }
     });
 }

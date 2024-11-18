@@ -15,6 +15,7 @@ def get_completed_applications(user, end_date=None):
     applications = Application.objects.filter(**filter_params)
     return applications
 
+
 def get_withdrawal_requests(user, end_date=None):
     # Базовые параметры фильтрации: по пользователю и статусу
     filter_params = {
@@ -28,6 +29,7 @@ def get_withdrawal_requests(user, end_date=None):
     # Получаем отфильтрованные запросы с сортировкой по id
     withdrawals = WithdrawalRequest.objects.filter(**filter_params).order_by('-id')
     return withdrawals
+
 
 def get_withdrawal_requests_data(withdrawals_page):
     return [

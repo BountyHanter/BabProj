@@ -2,8 +2,9 @@
 <header class="header">
     <a href="{% url 'user_applications' %}"><img class="logo" src="{% static 'img/logo_t.svg' %}" alt="Logo"></a>
     <div class="head_info">
-        <span>
+        <span class="tooltip">
             <img src="{% static 'img/p.svg' %}" alt="Курс"> Курс: <b>{{ bybit_price }} ₽</b>
+            <span class="tooltip-text">{{ bybit_time }}</span>
         </span>
         <span>
             <img src="{% static 'img/user.svg' %}" alt="Имя пользователя"><b>{{ username }}</b>

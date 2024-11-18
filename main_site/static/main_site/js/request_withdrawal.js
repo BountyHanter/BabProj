@@ -1,67 +1,50 @@
-$(document).ready(function() {
-    // Обработчик отправки формы вывода средств
-    $('#withdrawalForm').on('submit', function(event) {
-        event.preventDefault(); // Предотвращаем стандартную отправку формы
+// Открытие модального окна
+function openModal() {
+    document.querySelector('.modal_request_withdrawal').style.display = 'block';
+}
 
-        const csrfToken = $('input[name="csrfmiddlewaretoken"]').val(); // Получаем CSRF-токен
-        const amount = $('#amount').val(); // Получаем введённую сумму
+// Закрытие модального окна
+function closeModal() {
+    document.querySelector('.modal_request_withdrawal').style.display = 'none';
+}
 
-        // Валидация суммы на стороне клиента
-        if (amount.trim() === '' || isNaN(amount) || Number(amount) <= 0) {
-            showNotification('Пожалуйста, введите корректную сумму.', 'warning');
-            return;
+// Отправка запроса на вывод
+function submitWithdrawalRequest() {
+    const amountInput = document.getElementById("withdrawal-amount");
+    const errorMessage = document.getElementById("error-message");
+    const amount = parseFloat(amountInput.value);
+
+    // Проверка на минимальную сумму
+    if (isNaN(amount) || amount < 100) {
+        errorMessage.style.display = 'block';
+        return;
+    } else {
+        errorMessage.style.display = 'none';
+    }
+
+    // Отправка запроса на сервер
+    fetch(WithdrawalRequestUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),  // CSRF-токен
+        },
+        body: JSON.stringify({ amount: amount })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage("Запрос на вывод успешно создан", 'success');
+            closeModal();
+            // Перезагрузка страницы через 5 секунд
+            setTimeout(function() {
+                location.reload();
+            }, 2000);
+        } else {
+            showMessage("Ошибка: " + data.message, 'error');
         }
-
-        // Отправляем AJAX-запрос для создания заявки на вывод средств
-        $.ajax({
-            url: $(this).attr('action'), // Используем URL из атрибута action формы
-            type: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken
-            },
-            data: {
-                'amount': amount // Передаём введённую сумму в запросе
-            },
-            success: function(response) {
-                if (response.success) {
-                    // Сохраняем уведомление в sessionStorage перед перезагрузкой страницы
-                    sessionStorage.setItem('notification', JSON.stringify({
-                        message: response.message || 'Запрос на вывод средств успешно создан',
-                        type: 'success'
-                    }));
-
-                    // Закрываем модальное окно
-                    $('#withdrawalModal').modal('hide');
-                    alert('Запрос на вывод средств успешно создан')
-
-                    // Перезагружаем страницу для обновления данных
-                    location.reload();
-                } else {
-                    // Если произошла ошибка, показываем уведомление с ошибкой из ответа
-                    showNotification(response.message || 'Произошла ошибка при создании запроса', 'danger');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Ошибка при создании запроса на вывод средств:', error);
-                let errorMessage = 'Не удалось создать запрос на вывод средств. Попробуйте позже.';
-
-                // Попытка извлечь сообщение об ошибке из ответа сервера
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                } else if (xhr.responseText) {
-                    try {
-                        // Попытка разобрать текстовый ответ как JSON
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.message) {
-                            errorMessage = response.message;
-                        }
-                    } catch (e) {
-                        console.error('Ошибка разбора ответа:', e);
-                    }
-                }
-
-                showNotification(errorMessage, 'danger');
-            }
-        });
+    })
+    .catch(error => {
+        showMessage("Ошибка при отправке запроса: " + error, 'error');
     });
-});
+}
