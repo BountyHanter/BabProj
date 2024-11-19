@@ -1,0 +1,32 @@
+{% load static %}
+<header class="header">
+    <a href="{% url 'user_applications' %}"><img class="logo" src="{% static 'img/logo_t.svg' %}" alt="Logo"></a>
+    <div class="head_info">
+        <span class="tooltip">
+            <img src="{% static 'img/p.svg' %}" alt="Курс"> Курс: <b>{{ bybit_price }} ₽</b>
+            <span class="tooltip-text">{{ bybit_time }}</span>
+        </span>
+        <span>
+            <img src="{% static 'img/user.svg' %}" alt="Имя пользователя"><b>{{ username }}</b>
+        </span>
+        <span>
+            <img src="{% static 'img/wallet.svg' %}" alt="Баланс"> Баланс: <b>{{ balance }} USDT</b>
+        </span>
+    </div>
+    <div>
+        <span class="h_activity_status {% if is_active %}active{% else %}not_active{% endif %}">
+            Статус: <b>{% if is_active %}Активен{% else %}Не активен{% endif %}</b>
+        </span>
+        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="header_button" style="cursor: pointer;">
+                Выйти <img src="{% static 'img/door.svg' %}" alt="Выйти">
+            </button>
+        </form>
+    </div>
+    <div class="h_menu">
+        <a href="{% url 'personal_cabinet' %}" class="{% if request.path == '/personal_cabinet/' %}active{% endif %}">Личный кабинет</a>
+        <a href="{% url 'active_application' %}" class="{% if request.path == '/active_application/' %}active{% endif %}">Активная заявка</a>
+        <a href="{% url 'user_applications' %}" class="{% if request.path == '/user_applications/' %}active{% endif %}">История заявок</a>
+    </div>
+</header>

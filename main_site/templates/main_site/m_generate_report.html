@@ -1,0 +1,174 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <title>BadData</title>
+        <style>
+
+        </style>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="keywords" content="">
+
+        <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+        <link rel="icon" type="image/x-icon" href="{% static 'favicon.png' %}">
+    </head>
+    <body class="page_generate_report m_generate_report">
+        <header class="header">
+            <a href="{% url 'merchant_dashboard' %}"><img class="logo" src="{% static 'img/logo_m.svg' %}" alt="Logo"></a>
+            <div class="head_info">
+                <span>
+                    <img src="{% static 'img/p.svg' %}" alt="Курс"> Курс: <b>{{ bybit_price }} ₽</b>
+                </span>
+                <span>
+                    <img src="{% static 'img/calendar.svg' %}" alt="Сумма заявок"> Сумма открытых заявок: <b>{{ total_amount }} ₽</b>
+                </span>
+                <span>
+                    <img src="{% static 'img/wallet.svg' %}" alt="Баланс"> Баланс: <b>{{ balance }} USDT</b>
+                </span>
+            </div>
+            <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="header_button" style="cursor: pointer;">
+                    Выйти <img src="{% static 'img/door.svg' %}" alt="Выйти">
+                </button>
+            </form>
+        </header>
+        <main class="main">
+            <section class="creating_report">
+                <div class="h1">Создание отчета</div>
+                <div class="h3">Выберите фильтры, если желаете их использовать при создании отчета</div>
+                <div class="table_creating_report">
+                    <div class="date_report">
+                        <div>
+                            <label class="title checkbox_label">
+                                <input type="checkbox" name="date_created_checkbox" class="toggle-input">
+                                <span></span> Дата создания заявки<br>
+                            </label>
+                            <label class="input_date_on_placeholder">
+                                <input class="toggle-field" name="date_created_from" placeholder="Выбрать период от:" type="text" disabled onfocus="this.type='date'" onblur="if(this.value==''){this.type='text'}"/>
+                            </label>
+                            <label class="input_date_on_placeholder">
+                                <input class="toggle-field" name="date_created_to" placeholder="Выбрать период до:" type="text" disabled onfocus="this.type='date'" onblur="if(this.value==''){this.type='text'}"/>
+                            </label>
+                        </div>
+                        <div>
+                            <label class="title checkbox_label">
+                                <input type="checkbox" name="date_completed_checkbox" class="toggle-input">
+                                <span></span> Дата выполнения заявки<br>
+                            </label>
+                            <label class="input_date_on_placeholder">
+                                <input class="toggle-field" name="date_completed_from" placeholder="Выбрать период от:" type="text" disabled onfocus="this.type='date'" onblur="if(this.value==''){this.type='text'}"/>
+                            </label>
+                            <label class="input_date_on_placeholder">
+                                <input class="toggle-field" name="date_completed_to" placeholder="Выбрать период до:" type="text" disabled onfocus="this.type='date'" onblur="if(this.value==''){this.type='text'}"/>
+                            </label>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="transactions_report">
+                        <div>
+                            <label class="title checkbox_label">
+                                <input type="checkbox" name="transaction_type_checkbox" class="toggle-input">
+                                <span></span> Тип транзакции<br>
+                            </label>
+                            <label class="select_label">
+                                <select name="transaction_type" class="toggle-field" disabled>
+                                    <option>Любой (по умолчанию)</option>
+                                    <option value="c2c">С2С</option>
+                                    <option value="sbp">СБП</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div>
+                            <label class="title checkbox_label">
+                                <input type="checkbox" name="status_checkbox" class="toggle-input">
+                                <span></span> Статус<br>
+                            </label>
+                            <label class="select_label">
+                                <select name="status" class="color_select toggle-field" disabled>
+                                    <option>Любой (по умолчанию)</option>
+                                    <option class="blue" value="new">• New</option>
+                                    <option class="green" value="active">• Active</option>
+                                    <option class="yellow" value="processing">• Processing</option>
+                                    <option class="g" value="completed">• Completed</option>
+                                    <option class="r" value="canceled">• Canceled</option>
+                                    <option class="purple" value="manual">• Manual</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="bank_report">
+                        <div>
+                            <label class="title checkbox_label">
+                                <input type="checkbox" name="from_bank_checkbox" class="toggle-input">
+                                <span></span> Выберите банк отправителя<br>
+                            </label>
+                            <label class="select_label">
+                                <select name="from_bank" class="toggle-field" disabled>
+                                    <option>Любой (по умолчанию)</option>
+                                    {% for bank in banks %}
+                                        <option value="{{ bank }}">{{ bank }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                        </div>
+                        <div>
+                            <label class="title checkbox_label">
+                                <input type="checkbox" name="to_bank_checkbox" class="toggle-input">
+                                <span></span> Выберите банк получателя<br>
+                            </label>
+                            <label class="select_label">
+                                <select name="to_bank" class="toggle-field" disabled>
+                                    <option>Любой (по умолчанию)</option>
+                                    {% for bank in banks %}
+                                        <option value="{{ bank }}">{{ bank }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="summ_report">
+                        <div>
+                            <label class="title checkbox_label">
+                                <input type="checkbox" name="amount_from_checkbox" class="toggle-input">
+                                <span></span> Диапазон суммы (От)<br>
+                            </label>
+                            <label class="label_input">
+                                <input type="number" name="amount_from" class="toggle-field" placeholder="Пример: Минимальная сумма: 10 000 RUB" disabled>
+                            </label>
+                        </div>
+                        <div>
+                            <label class="title checkbox_label">
+                                <input type="checkbox" name="amount_to_checkbox" class="toggle-input">
+                                <span></span> Диапазон суммы (До)<br>
+                            </label>
+                            <label class="label_input">
+                                <input type="number" name="amount_to" class="toggle-field" placeholder="Пример: Максимальная сумма: 100 000 RUB" disabled>
+                            </label>
+                        </div>
+                    </div>
+                    <a class="btn_b creating_report_btn">Создать отчёт</a>
+                </div>
+            </section>
+        </main>
+        <div class="modal modal_creating_report">
+            <div class="modal_content">
+                <button class="close"><img src="{% static 'img/close.svg' %}"></button>
+                <div class="modal_title">Внимание!</div>
+                <div class="modal_text">После начала генерации отчета, дождитесь его загрузки. Отчет может формироваться некоторое время. После формирования отчета, скачивание начнется автоматически. </div>
+                <label class="title checkbox_label"><input type="checkbox"><span></span> Я ознакомился с правилами создания отчетов<br></label>
+                <a class="btn_b">Создать запрос</a>
+            </div>
+        </div>
+    <script type="text/javascript">
+        const reportUrl = "{% url 'm_generate_report' %}";
+    </script>
+    <script src={% static "main_site/js/jquery.js" %}></script>
+    <script src={% static "main_site/js/csrf_token.js" %}></script>
+    <script src={% static "main_site/js/report.js" %}></script>
+    </body>
+</html>

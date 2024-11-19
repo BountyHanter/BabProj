@@ -1,140 +1,124 @@
-{% if active_application %}
-    <div id="active-application-section" class="mt-5">
-        {% if active_application %}
-        <div id="timer-container" class="mt-3">
-                <strong>Время до завершения заявки:</strong> <span id="timer" class="badge badge-info p-2">30:00</span>
+{% load static %}
+<section class="application">
+    <div class="left_block">
+        <div class="top_panel">
+            <div class="h2">Время на оплату заявки: ID {{ active_application.id }}</div>
+             <div class="timer" id="timer-container">
+                <span class="taken-time" data-taken-time="{{ active_application.taken_time|date:"c" }}"></span>
+                <span id="timer">Загрузка...</span>
+            </div>
+            <div>
+            <input type="hidden" id="application_id" value="{{ active_application.id }}">
+                <ul>
+                    <li>
+                      <div>Статус заявки</div>
+                      <div></div>
+                      <div class="status">
+                        {% if active_application.status == "new" %}
+                          Новая
+                        {% elif active_application.status == "active" %}
+                          Активна
+                        {% elif active_application.status == "processing" %}
+                          В обработке
+                        {% elif active_application.status == "completed" %}
+                          Завершена
+                        {% elif active_application.status == "canceled" %}
+                          Отменена
+                        {% else %}
+                          {{ active_application.status }}
+                        {% endif %}
+                      </div>
+                    </li>
+                    <li><div>ID</div><div></div><div>{{ active_application.id }}</div></li>
+                    <li>
+                      <div>Тип</div>
+                      <div></div>
+                      <div>
+                        {% if active_application.type == "sbp" %}
+                          СБП
+                        {% elif active_application.type == "c2c" %}
+                          С2С
+                        {% else %}
+                          {{ active_application.type }}
+                        {% endif %}
+                      </div>
+                    </li>
+                    <li><div>Сумма</div><div></div><div>{{ active_application.amount }} RUB</div></li>
+                    <li><div>Реквизиты</div><div></div><div>{{ active_application.payment_details }}</div></li>
+                    <li><div>Банк получателя</div><div></div><div>{{ active_application.to_bank }}</div></li>
+                    <li><div>Время создания </div><div></div><div>{{ active_application.created_at }}</div></li>
+                    <li><div>Время взятия </div><div></div><div>{{ active_application.taken_time }}</div></li>
+                </ul>
+            </div>
         </div>
-        <div class="card mb-4">
-            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Ваша активная заявка</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive table-container">
-                    <table id="active-application-table" class="table table-hover table-bordered mb-0">
-                        <thead class="thead-light">
-                        <tr>
-                            <th>ID</th>
-                            <th>Тип</th>
-                            <th>Реквизиты</th>
-                            <th>Банк получателя</th>
-                            <th>Статус</th>
-                            <th>Сумма</th>
-                            <th>Время создания</th>
-                            <th>Время взятия</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr class="active-application">
-                            <td>{{ active_application.id }}</td>
-                            <td>{{ active_application.type }}</td>
-                            <td>{{ active_application.payment_details }}</td>
-                            <td>{{ active_application.to_bank }}</td>
-                            <td>{{ active_application.status }}</td>
-                            <td>{{ active_application.amount }}</td>
-                            <td>{{ active_application.created_at|date:"d.m.Y H:i:s" }}</td>
-                            <td class="taken-time" data-taken-time="{{ active_application.taken_time|date:"c" }}">
-                                {{ active_application.taken_time|date:"d.m.Y H:i:s" }}
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <!-- Контейнер для деталей заявки всегда отображается -->
-                <div id="receipt-container" class="mt-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>Детали заявки ID: {{ active_application.id }}</h5>
-                        </div>
-                        <div class="card-body">
-                            <form id="receipt-form" action="{% url 'upload_receipt' %}" method="post" enctype="multipart/form-data">
-                                {% csrf_token %}
-                                <input type="hidden" name="application_id" value="{{ active_application.id }}">
+        <div class="bot_panel" onclick="openModal()">
+            <img src="{% static 'img/trabl.svg' %}">
+            <a style="cursor: pointer">Проблема с оплатой</a>
+        </div>
+    </div>
+    <div class="right_block">
+        <div class="h1">Ваша активная заявка</div>
+        <div class="h2">
+            {% if active_application.type == 'sbp' %}
+                1. Выполните перевод по СБП:
+                <img src="{% static 'img/spb.svg' %}">
+            {% elif active_application.type == 'c2c' %}
+                1. Выполните перевод по номеру карты:
+                <img src="{% static 'img/card.svg' %}">
 
-                                <div class="form-row">
-                                    <div class="form-group col-md-6">
-                                        <label for="application-type">Тип заявки</label>
-                                        <input type="text" class="form-control" id="application-type" value="{{ active_application.type }}" readonly>
-                                    </div>
-                                    <div class="form-group col-md-6">
-                                        <label for="amount">Сумма</label>
-                                        <input type="text" class="form-control" id="amount" value="{{ active_application.amount }}" readonly>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="payment-details">Реквизиты</label>
-                                    <input type="text" class="form-control" id="payment-details" value="{{ active_application.payment_details }}" readonly>
-                                </div>
-
-                                {% if active_application.status == 'active' %}
-                                <div id="upload-section">
-                                    <div class="form-group">
-                                        <label for="bank-select">Банк, с которого оплатили</label>
-                                        <select class="form-control select2" id="bank-select" name="bank_id" required>
-                                            <option value="" disabled selected>Выберите банк</option>
-                                            {% for bank in banks %}
-                                                <option value="{{ bank.id }}">{{ bank.name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="mb-4">
-                                        <label for="receipt-file" class="font-weight-bold">Загрузить чек</label>
-                                        <div class="dropzone p-4 border border-secondary rounded text-center" id="file-dropzone">
-                                            <input type="file" id="receipt-file" name="receipt" accept="image/*,application/pdf" required>
-                                            <p class="mt-3">Перетащите файл сюда или нажмите, чтобы выбрать</p>
-                                        </div>
-                                        <div id="file-preview" class="mt-3"></div>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary">Отправить чек на проверку</button>
-                                </div>
-                                <div id="problem-btn" class="form-group mt-3">
-                                    <button type="button" class="btn btn-danger" id="report-problem-btn">Проблема с оплатой</button>
-                                </div>
-                                {% endif %}
-
-                                {% if active_application.status != 'active' %}
-                                <div id="info-section" class="mt-3">
-                                    <div class="form-group">
-                                        <label for="bank-name">Банк, с которого оплатили</label>
-                                        <input type="text" class="form-control" id="bank-name" value="{{ active_application.from_bank }}" readonly>
-                                    </div>
-                                </div>
-                                {% endif %}
-
-                                <div id="loading-spinner" class="text-center my-3" style="display: none">
-                                    <div class="spinner-border text-primary spinner-border-custom" role="status">
-                                        <span class="sr-only">Загрузка...</span>
-                                    </div>
-                                    <p class="mt-2">Отправка чека...</p>
-                                </div>
-
-                                {% if active_application.status == 'processing' %}
-                                <button type="button" id="confirmation-btn" class="btn btn-success">Подтвердить</button>
-                                {% endif %}
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <div class="card border-0">
-                <div class="card-body text-center">
-                    <form id="take-application-form" method="post" action="{% url 'take_application' %}">
-                        {% csrf_token %}
-                        <button type="submit" id="take-application-btn" class="btn btn-success btn-lg">Взять заявку</button>
-                    </form>
-                </div>
-            </div>
             {% endif %}
         </div>
+        <div class="h3">Сумма перевода</div>
+        <label class="input_text">
+            <input type="text" readonly placeholder="{{ active_application.amount }} RUB" value="{{ active_application.amount }} RUB">
+            <img class="copy" style="cursor: pointer" src="{% static 'img/copy.svg' %}">
+        </label>
+        <hr>
+        <div class="h2">2. Строго по реквизитам в указанном банке</div>
+        <div class="h3">
+            {% if active_application.type == 'sbp' %}
+                Номер телефона
+            {% elif active_application.type == 'c2c' %}
+                Номер карты
+            {% endif %}
+        </div>
+        <label class="input_text">
+            <input type="text" readonly placeholder="{{ active_application.payment_details }}" value="{{ active_application.payment_details }}">
+            <img class="copy" style="cursor: pointer" src="{% static 'img/copy.svg' %}">
+        </label>
+        <hr>
+        {% if active_application.status == 'active' %}
+        <div id="original-content">
+            <div class="h2">3. Укажите банк, с которого оплатили</div>
+            <label class="select_label">
+                <select name="bank_sender" style="cursor: pointer">
+                    <option value="" disabled selected>Выберите банк</option>
+                    {% for bank in banks %}
+                        <option value="{{ bank }}">{{ bank }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <hr>
+            <div class="h2">4. Загрузите чек об операции</div>
+            <label>
+                <div class="upload_zone_dragover">
+                    <span><img src="{% static 'img/file.svg' %}">Перетащите файл сюда или нажмите чтобы выбрать</span>
+                    <input class="form_upload_input" id="uploadForm_File" type="file" style="display: none" name="file_name" aria-describedby="hint">
+                </div>
+            </label>
+            <a class="send_check_btn btn_b">Отправить чек на проверку</a>
+        </div>
+        <div id="loading-indicator" style="display: none">
+            <div class="spinner"></div>
+            <div class="loading-text">Загрузка...</div>
+        </div>
+        {% else %}
+        <div class="h2">Указанный банк с которого провелась оплата</div>
+        <label class="input_text">
+            <input type="text" readonly placeholder="{{ active_application.from_bank }}" value="{{ active_application.from_bank }}">
+            <img class="copy" style="cursor: pointer" src="{% static 'img/copy.svg' %}">
+        </label>
+        <a class="send_confirm_btn btn_b">Подтвердить</a>
+        {% endif %}
     </div>
-{% else %}
-<div class="card border-0">
-    <div class="card-body text-center">
-        <form id="take-application-form" method="post" action="{% url 'take_application' %}">
-            {% csrf_token %}
-            <button type="submit" id="take-application-btn" class="btn btn-success btn-lg">Взять заявку</button>
-        </form>
-    </div>
-</div>
-{% endif %}
+</section>

@@ -1,15 +1,10 @@
-import os
-from dotenv import load_dotenv
 import requests
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 
 from database.models import UserProfile
 from database.models.application import Application
-
-load_dotenv()
-SITE_URL = os.getenv('SITE_URL')
-TG_FLASK_ADDRESS = os.getenv('TG_FLASK_ADDRESS')
+from finApplications.globals import TG_FLASK_ADDRESS, SITE_URL
 
 
 def send_application_data(application_id):

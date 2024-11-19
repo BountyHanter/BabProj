@@ -1,0 +1,17 @@
+{% load static %}
+<div id="application-container">
+    <div id="user-menu">
+        {% include 'main_site/user_menu.html' %}
+    </div>
+
+    <main class="main">
+        {% if active_application %}
+            {% include 'main_site/partials/active_application_partial.html' %}
+        {% else %}
+            <section class="not_application">
+                <a id="take-application-btn" class="go_application btn_b">Взять заявку</a>
+                <img src="{% static 'img/team.svg' %}">
+            </section>
+        {% endif %}
+    </main>
+</div>

@@ -76,7 +76,7 @@ def get_average_price():
         print(f"Ошибка: {response.status_code}")
 
 
-def take_bybit_price():
+def take_bybit_data():
     file_path = os.path.join(BASE_DIR, "finApplications/average_price.json")
 
     with open(file_path, 'r') as file:
