@@ -143,6 +143,7 @@ class Application(models.Model):
         user = kwargs.pop('user', None)  # Получаем пользователя из параметров
         is_new = not self.pk  # Проверяем, новый ли объект
         changed_fields = {}
+        old_instance = None  # Инициализируем old_instance
 
         if not is_new:  # Если объект уже существует (обновление)
             old_instance = Application.objects.get(pk=self.pk)
@@ -164,7 +165,12 @@ class Application(models.Model):
 
         # Устанавливаем время завершения, если статус изменяется на 'completed' или 'canceled'
         if self.status in ['completed', 'canceled']:
-            self.completed_time = timezone.now()
+            # Получаем старое значение completed_time из базы данных
+            old_completed_time = old_instance.completed_time if old_instance else None
+
+            if old_completed_time is None:
+                if not self.completed_time:
+                    self.completed_time = timezone.now()
 
         # Вызов оригинального метода save для сохранения изменений
         super().save(*args, **kwargs)

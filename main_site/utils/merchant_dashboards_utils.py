@@ -22,8 +22,10 @@ def filter_applications(request, applications):
         applications = applications.filter(created_at__gte=date_from_parsed)
 
     if date_to:
-        date_to_parsed = datetime.strptime(date_to, "%Y-%m-%d").replace(tzinfo=timezone)
-        applications = applications.filter(created_at__lte=date_to_parsed)
+        if date_to:
+            date_to_parsed = datetime.strptime(date_to, "%Y-%m-%d").replace(tzinfo=timezone)
+            date_to_parsed = date_to_parsed.replace(hour=23, minute=59, second=59)  # Конец дня
+            applications = applications.filter(created_at__lte=date_to_parsed)
 
     return applications
 

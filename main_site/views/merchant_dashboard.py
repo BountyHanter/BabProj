@@ -21,11 +21,6 @@ def merchant_dashboard(request):
 
     # Используем функцию для пагинации и получения диапазона страниц
     applications_page, page_range, total_pages = paginate_with_range(applications, page_number, rows_per_page)
-    #
-    # # Данные заявок
-    # applications_data = get_applications_data(applications_page)
-    # print(applications_data)
-    print(get_ajax_applications_data(applications_page))
 
 
     # Контекст для шаблона

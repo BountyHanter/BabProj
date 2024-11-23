@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 
 from django.db.models import Sum
@@ -26,9 +26,9 @@ def personal_cabinet(request):
 
     # Преобразуем `date_withdrawal` и `date_application` в `timezone-aware` формат с московским временем
     if date_filter_withdrawal:
-        date_filter_withdrawal = MOSCOW_TZ.localize(datetime.strptime(date_filter_withdrawal, "%Y-%m-%d"))
+        date_filter_withdrawal = MOSCOW_TZ.localize(datetime.strptime(date_filter_withdrawal, "%Y-%m-%d")) + timedelta(days=1)
     if date_filter_application:
-        date_filter_application = MOSCOW_TZ.localize(datetime.strptime(date_filter_application, "%Y-%m-%d"))
+        date_filter_application = MOSCOW_TZ.localize(datetime.strptime(date_filter_application, "%Y-%m-%d")) + timedelta(days=1)
 
     withdrawals = get_withdrawal_requests(user, date_filter_withdrawal)
 

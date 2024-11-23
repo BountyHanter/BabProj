@@ -6,6 +6,7 @@ import pytz
 import requests
 from celery import shared_task
 from django.utils import timezone
+from django.utils.timezone import localtime
 from dotenv import load_dotenv
 from openpyxl import Workbook
 from io import BytesIO
@@ -32,8 +33,6 @@ def generate_excel_report(request, filter_data, type_user):
     wb = Workbook()
     ws = wb.active
     ws.title = "Отчёт"
-
-    print(filter_data)
 
     # Заголовки столбцов
     headers = ['ID заявки', 'Дата создания', 'Дата исполнения', 'Тип заявки', 'Реквизиты', 'Исполнитель', 'Сумма', 'Валюта',
@@ -111,8 +110,8 @@ def generate_excel_report(request, filter_data, type_user):
 
     for app in applications:
         user_name = app.executor.username if app.executor else 'N/A'
-        created_at = app.created_at.strftime('%Y-%m-%d %H:%M') if app.created_at else 'N/A'
-        completed_time = app.completed_time.strftime('%Y-%m-%d %H:%M') if app.completed_time else 'N/A'
+        created_at = localtime(app.created_at).strftime('%Y-%m-%d %H:%M') if app.created_at else 'N/A'
+        completed_time = localtime(app.completed_time).strftime('%Y-%m-%d %H:%M') if app.completed_time else 'N/A'
         row = [
             app.id,
             created_at,
